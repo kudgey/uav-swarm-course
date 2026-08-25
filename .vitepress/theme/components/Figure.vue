@@ -1,7 +1,15 @@
 <script setup lang="ts">
-import { ref, onUnmounted } from 'vue'
+import { ref, computed, onUnmounted } from 'vue'
+import { withBase } from 'vitepress'
 
-defineProps<{ src: string; alt?: string }>()
+const props = defineProps<{ src: string; alt?: string }>()
+
+/**
+ * Звичайні markdown-картинки VitePress префіксує base сам, а вміст
+ * компонента — ні. Без withBase на GitHub Pages, де сайт лежить
+ * у підкаталозі /<репозиторій>/, усі рисунки дають 404.
+ */
+const url = computed(() => withBase(props.src))
 
 const zoomed = ref<string | null>(null)
 
@@ -21,8 +29,8 @@ onUnmounted(() => document.removeEventListener('keydown', onKey))
 
 <template>
   <figure class="uk-figure">
-    <div class="uk-figure__frame" @click="open(src)" :title="'Збільшити: ' + (alt || '')">
-      <img :src="src" :alt="alt" loading="lazy" />
+    <div class="uk-figure__frame" @click="open(url)" :title="'Збільшити: ' + (alt || '')">
+      <img :src="url" :alt="alt" loading="lazy" />
     </div>
     <figcaption class="uk-figure__caption">
       <slot />
