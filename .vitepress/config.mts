@@ -9,6 +9,9 @@ export default defineConfig({
   // Задається змінною оточення, щоб той самий код працював і на власному домені.
   base: process.env.BASE ?? '/',
   cleanUrls: true,
+  // .ipynb VitePress вважає маршрутом і не знаходить сторінки, хоча файл
+  // лежить у public/. Дозволяємо саме цей шлях, решту посилань і далі перевіряє.
+  ignoreDeadLinks: [/\.ipynb$/],
   lastUpdated: true,
   markdown: {
     math: true,
