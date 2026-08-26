@@ -1,5 +1,8 @@
 import { defineConfig } from 'vitepress'
 
+// base потрібен і поза themeConfig — теги <head> не проходять через withBase.
+const base = process.env.BASE ?? '/'
+
 export default defineConfig({
   title: 'Рої БПЛА та машинне навчання',
   description:
@@ -7,7 +10,8 @@ export default defineConfig({
   lang: 'uk-UA',
   // GitHub Pages у підкаталозі вимагає base='/<репозиторій>/'.
   // Задається змінною оточення, щоб той самий код працював і на власному домені.
-  base: process.env.BASE ?? '/',
+  // Той самий base потрібен і для тегів у <head>: вони не проходять через withBase.
+  base,
   cleanUrls: true,
   // .ipynb VitePress вважає маршрутом і не знаходить сторінки, хоча файл
   // лежить у public/. Дозволяємо саме цей шлях, решту посилань і далі перевіряє.
@@ -20,6 +24,7 @@ export default defineConfig({
     image: { lazyLoading: true }
   },
   head: [
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: base + 'favicon.svg' }],
     ['meta', { name: 'theme-color', content: '#3D4EC4' }],
     ['meta', { property: 'og:title', content: 'Машинне навчання у ройових системах БПЛА' }]
   ],
