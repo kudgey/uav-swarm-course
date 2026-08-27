@@ -409,8 +409,91 @@ html.uk-pres .uk-figure__frame img {
 }
 
 /* --- головна сторінка ---------------------------------------------------- */
-/* Вёрстку головної сторінки цього курсу тримає VitePress hero-layout,
-   тому власних .uk-hero/.uk-block тут немає. */
+
+.uk-hero {
+  padding: 1rem 0 2.5rem;
+}
+
+.uk-hero__eyebrow {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--uk-accent);
+}
+
+.uk-hero h1 {
+  font-size: 2.7rem;
+  line-height: 1.14;
+  letter-spacing: -0.03em;
+  margin: 0.6rem 0 0.8rem;
+  border: 0;
+}
+
+.uk-hero__lead {
+  font-size: 1.14rem;
+  line-height: 1.62;
+  color: var(--vp-c-text-2);
+  max-width: 66ch;
+}
+
+.uk-blocks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(285px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.uk-block {
+  border: 1px solid var(--uk-line);
+  border-radius: 12px;
+  padding: 1.15rem 1.25rem 1.25rem;
+  background: var(--vp-c-bg);
+  transition: border-color 0.18s ease, transform 0.18s ease;
+}
+
+.uk-block:hover {
+  border-color: var(--uk-accent);
+  transform: translateY(-2px);
+}
+
+.uk-block__tag {
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--uk-accent);
+}
+
+.uk-block h3 {
+  font-size: 1.02rem;
+  margin: 0.35rem 0 0.7rem;
+  border: 0;
+  padding: 0;
+  letter-spacing: -0.01em;
+}
+
+.uk-block ol {
+  margin: 0;
+  padding-left: 1.15rem;
+  font-size: 0.895rem;
+  line-height: 1.5;
+}
+
+.uk-block li {
+  margin: 0.3rem 0;
+}
+
+.uk-block a {
+  text-decoration: none;
+  color: var(--vp-c-text-1);
+  border-bottom: 1px solid transparent;
+}
+
+.uk-block a:hover {
+  color: var(--uk-accent);
+  border-bottom-color: var(--uk-accent);
+}
 
 @media (max-width: 640px) {
   html { font-size: 16px; }

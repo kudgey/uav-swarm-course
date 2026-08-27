@@ -1,3 +1,4 @@
+import { h } from 'vue'
 import DefaultTheme from 'vitepress/theme'
 import type { Theme } from 'vitepress'
 
@@ -8,6 +9,7 @@ import '@fontsource/ibm-plex-serif/400.css'
 import '@fontsource/jetbrains-mono/400.css'
 import './style.css'
 
+import CourseHome from './components/CourseHome.vue'
 import Figure from './components/Figure.vue'
 import Flow from './components/Flow.vue'
 import BoidsLab from './components/BoidsLab.vue'
@@ -28,7 +30,15 @@ import PresToggle from './components/PresToggle.vue'
 
 export default {
   extends: DefaultTheme,
+  // Кнопка режиму презентації монтується глобально, а не вручну на сторінці:
+  // так вона доступна й на головній, і на кожній лекції.
+  Layout() {
+    return h(DefaultTheme.Layout, null, {
+      'layout-bottom': () => h(PresToggle)
+    })
+  },
   enhanceApp({ app }) {
+    app.component('CourseHome', CourseHome)
     app.component('Figure', Figure)
     app.component('Flow', Flow)
     app.component('BoidsLab', BoidsLab)
