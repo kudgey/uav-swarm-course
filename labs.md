@@ -27,7 +27,7 @@ outline: [2, 2]
 
 **Середовище.** Python 3.12, NumPy, Matplotlib, Gymnasium, Stable-Baselines3,
 [gym-pybullet-drones](https://github.com/utiasDSL/gym-pybullet-drones) — усе
-з PyPI і GitHub, без реєстрації, ключів і ліцензій. Відеокарта не потрібна:
+встановлюється з PyPI і GitHub. Відеокарта не потрібна:
 запуски навчання розраховані на процесор звичайного ноутбука, межа —
 30 хвилин на один запуск. Єдина тонкість: `pybullet` не має готових збірок
 під Python 3.12 і компілюється з джерел, тому потрібен компілятор C++
