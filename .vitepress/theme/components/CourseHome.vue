@@ -42,6 +42,39 @@ const BLOCKS = [
     ]
   }
 ]
+
+const SOURCES = [
+  {
+    a: 'Quan Quan',
+    t: 'Introduction to Multicopter Design and Control',
+    v: 'Springer, 2017',
+    d: 'Системи координат, стійкість, запас керування, оцінювання стану, оцінювання справності та failsafe.'
+  },
+  {
+    a: 'Albrecht, Christianos, Schäfer',
+    t: 'Multi-Agent Reinforcement Learning: Foundations and Modern Approaches',
+    v: 'MIT Press, 2024',
+    d: 'Моделі ігор, концепції розв\'язку, централізоване навчання з децентралізованим виконанням, декомпозиція цінності.'
+  },
+  {
+    a: 'Dorigo, Theraulaz, Trianni',
+    t: 'Swarm Robotics: Past, Present, and Future',
+    v: 'Proceedings of the IEEE, 2021',
+    d: 'Означення рою, властивості роєвої поведінки, історія напряму, платформи.'
+  },
+  {
+    a: 'Azar та ін.',
+    t: 'Drone Deep Reinforcement Learning: A Review',
+    v: 'Electronics, 2021',
+    d: 'Таксономія методів, порівняння алгоритмів у польотних задачах.'
+  },
+  {
+    a: 'Batra та ін.',
+    t: 'Decentralized Control of Quadrotor Swarms with End-to-end Deep Reinforcement Learning',
+    v: 'CoRL, 2021',
+    d: 'Якірна робота модуля 07: вектор спостереження, масштабування, реальні польоти.'
+  }
+]
 </script>
 
 <template>
@@ -88,9 +121,25 @@ const BLOCKS = [
     </p>
     <p class="uk-thesis__links">
       <a :href="withBase('/labs')">Лабораторні роботи</a> ·
-      <a :href="withBase('/about')">Про курс і джерела</a>
+      <a :href="withBase('/docs/silabus.pdf')">Робоча програма дисципліни, PDF</a>
     </p>
   </div>
+
+  <section class="uk-sources">
+    <h2>Першоджерела</h2>
+    <p class="uk-sources__lead">
+      Основні твердження курсу спираються на ці роботи. Під кожним запозиченим
+      рисунком у лекціях стоїть рядок «Джерело: …».
+    </p>
+    <ul>
+      <li v-for="s in SOURCES" :key="s.t">
+        <span class="uk-src__a">{{ s.a }}</span>
+        <b>{{ s.t }}</b>
+        <span class="uk-src__v">{{ s.v }}</span>
+        <span class="uk-src__d">{{ s.d }}</span>
+      </li>
+    </ul>
+  </section>
 </template>
 
 <style scoped>
@@ -148,5 +197,58 @@ const BLOCKS = [
 .uk-thesis__links {
   margin-top: 1rem;
   font-size: 0.9rem;
+}
+
+.uk-sources {
+  margin-top: 2.4rem;
+  padding-top: 1.8rem;
+  border-top: 1px solid var(--uk-line);
+}
+.uk-sources h2 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+.uk-sources__lead {
+  font-size: 0.88rem;
+  color: var(--vp-c-text-3);
+  margin: 0.4rem 0 1.1rem;
+  max-width: 72ch;
+}
+.uk-sources ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.9rem;
+}
+.uk-sources li {
+  margin: 0;
+  padding-left: 0.9rem;
+  border-left: 2px solid var(--uk-line);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+.uk-src__a {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--vp-c-text-3);
+}
+.uk-sources li b {
+  font-weight: 600;
+  color: var(--vp-c-text-1);
+}
+.uk-src__v {
+  color: var(--vp-c-text-3);
+  font-size: 0.82rem;
+}
+.uk-src__v::before { content: ' · '; }
+.uk-src__d {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--vp-c-text-2);
 }
 </style>

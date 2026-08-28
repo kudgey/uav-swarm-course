@@ -32,16 +32,14 @@ export default defineConfig({
     outline: { level: [2, 3], label: 'На цій сторінці' },
     nav: [
       { text: 'Лекції', link: '/lectures/01' },
-      { text: 'Лабораторні', link: '/labs' },
-      { text: 'Про курс', link: '/about' }
+      { text: 'Лабораторні', link: '/labs' }
     ],
     sidebar: [
       {
         text: 'Курс',
         items: [
           { text: 'Огляд і структура', link: '/' },
-          { text: 'Лабораторні роботи', link: '/labs' },
-          { text: 'Про курс і джерела', link: '/about' }
+          { text: 'Лабораторні роботи', link: '/labs' }
         ]
       },
       {
