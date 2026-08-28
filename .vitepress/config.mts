@@ -16,7 +16,8 @@ export default defineConfig({
   // .ipynb VitePress вважає маршрутом і не знаходить сторінки, хоча файл
   // лежить у public/. Дозволяємо саме цей шлях, решту посилань і далі перевіряє.
   ignoreDeadLinks: [/\.ipynb$/],
-  lastUpdated: true,
+  // README — службовий файл репозиторію, не сторінка курсу.
+  srcExclude: ['README.md'],
   markdown: {
     math: true,
     lineNumbers: true,
@@ -83,7 +84,6 @@ export default defineConfig({
     darkModeSwitchTitle: 'Темна тема',
     sidebarMenuLabel: 'Розділи',
     returnToTopLabel: 'Догори',
-    lastUpdatedText: 'Оновлено',
     search: {
       provider: 'local',
       options: {

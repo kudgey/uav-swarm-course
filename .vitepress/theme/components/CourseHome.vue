@@ -106,10 +106,9 @@ const SOURCES = [
 
   <div class="uk-facts">
     <div class="uk-fact"><b>10</b><span>модулів</span></div>
-    <div class="uk-fact"><b>307</b><span>розділів</span></div>
-    <div class="uk-fact"><b>101</b><span>ілюстрація</span></div>
-    <div class="uk-fact"><b>13</b><span>віджетів</span></div>
+    <div class="uk-fact"><b>18</b><span>пар</span></div>
     <div class="uk-fact"><b>5</b><span>лабораторних</span></div>
+    <div class="uk-fact"><b>4</b><span>кредити ЄКТС</span></div>
   </div>
 
   <div class="uk-thesis">
