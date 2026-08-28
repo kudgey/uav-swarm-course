@@ -25,9 +25,13 @@ outline: [2, 2]
 ручних правок**: `Kernel → Restart & Run All` не повинен давати помилок.
 У першій комірці вказано, хто з учасників за які комірки відповідав.
 
-**Середовище.** Python, NumPy, Matplotlib, Gymnasium, Stable-Baselines3,
-[gym-pybullet-drones](https://github.com/utiasDSL/gym-pybullet-drones).
-Навчання розраховане на звичайний ноутбук без відеокарти.
+**Середовище.** Python 3.12, NumPy, Matplotlib, Gymnasium, Stable-Baselines3,
+[gym-pybullet-drones](https://github.com/utiasDSL/gym-pybullet-drones) — усе
+з PyPI і GitHub, без реєстрації, ключів і ліцензій. Відеокарта не потрібна:
+запуски навчання розраховані на процесор звичайного ноутбука, межа —
+30 хвилин на один запуск. Єдина тонкість: `pybullet` не має готових збірок
+під Python 3.12 і компілюється з джерел, тому потрібен компілятор C++
+(`build-essential` на Ubuntu, інструменти командного рядка Xcode на macOS).
 
 [Завантажити всі п'ять однією текою](/labs/labs-all.zip) ·
 [Шаблон ноутбука](/labs/zvit-shablon.ipynb)
