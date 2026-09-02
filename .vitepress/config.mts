@@ -74,7 +74,7 @@ export default defineConfig({
         collapsed: false,
         items: [
           { text: '09 · Безпека та робастність роїв БПЛА', link: '/lectures/09' },
-          { text: '10 · Реалізація та викладання', link: '/lectures/10' }
+          { text: '10 · Реалізація та інструменти', link: '/lectures/10' }
         ]
       }
     ],
