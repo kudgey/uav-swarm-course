@@ -97,12 +97,12 @@ def convert_card(card, alts, figs_present, missing, ctx):
             fence = not fence
             out.append(line)
             if closing:
-                # після закритої огорожі python — фактичний вивід, якщо його записано
+                # Вивід програми вже є в джерелі окремою карткою «Результат…»,
+                # тому другий раз його сюди не вставляємо: раніше через це
+                # той самий текст друкувався на сторінці двічі поспіль, ще й
+                # із службовим рядком збірки (ім'я PNG, розмір), якого код
+                # не друкує. Звірку виводу з кодом робить tools/run_examples.py.
                 if ctx.get("was_python"):
-                    key = "%s.%d" % (ctx["num"], ctx["py"])
-                    text = ctx["outputs"].get(key)
-                    if text:
-                        out += ["", "<RunOutput>", "", "```text", text, "```", "", "</RunOutput>", ""]
                     ctx["py"] += 1
                     ctx["was_python"] = False
             else:

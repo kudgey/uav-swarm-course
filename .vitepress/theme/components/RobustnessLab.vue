@@ -4,7 +4,7 @@
  *
  * Відтворює числа картки «Чого ця схема не гарантує» модуля 09: після 16 втрат
  * із 20 апаратів середня λ₂ дорівнює 0,015 / 0,304 / 1,129 для радіусів
- * 30 / 40 / 55 м, а частка зв'язних прогонів — лише 2 / 25 / 68 відсотків.
+ * 30 / 40 / 55 м, а зв'язними лишаються 1, 10 і 27 прогонів із сорока.
  * Саме розрив між цими двома числами й є урок картки.
  */
 import { ref, computed } from 'vue'
@@ -59,6 +59,7 @@ const stats = computed(() => {
   }
   return {
     connectedPct: (connected / RUNS) * 100,
+    connectedRuns: connected,
     meanComp: comps.reduce((a, b) => a + b, 0) / RUNS,
     worst: Math.max(...comps),
     alive: N - lost.value
@@ -95,7 +96,7 @@ const stats = computed(() => {
 
     <div class="rb__track">
       <div class="rb__fill" :style="{ width: stats.connectedPct + '%' }" />
-      <span class="rb__cap">{{ stats.connectedPct.toFixed(0) }} % прогонів зв'язні</span>
+      <span class="rb__cap">{{ stats.connectedRuns }} із {{ RUNS }} прогонів зв'язні</span>
     </div>
 
     <div class="lab__stats">
@@ -104,7 +105,7 @@ const stats = computed(() => {
         <span>апаратів лишилося</span>
       </div>
       <div class="lab__stat" :class="stats.connectedPct >= 50 ? 'is-green' : 'is-warm'">
-        <b>{{ stats.connectedPct.toFixed(0) }} %</b>
+        <b>{{ stats.connectedRuns }} / {{ RUNS }}</b>
         <span>прогонів, де рій зв'язний</span>
       </div>
       <div class="lab__stat">

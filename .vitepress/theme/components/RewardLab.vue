@@ -55,12 +55,27 @@ const terms = computed(() => {
 const total = computed(() => terms.value.reduce((a, t) => a + t.v, 0))
 const span = computed(() => Math.max(...terms.value.map((t) => Math.abs(t.v)), 1))
 
-/** Скільки віддачі втрачає агент, розбившись: різниця з повним епізодом. */
-const lostByCrash = computed(() => {
-  const alive = wAlive.value * STEPS * DT
-  const aliveCut = wAlive.value * Math.round(STEPS * 0.35) * DT
-  return alive - aliveCut
+/**
+ * Що агент отримає за решту епізоду, якщо НЕ розіб'ється.
+ * Рахуємо всі покрокові доданки разом, а не лише бонус за життя: розбившись,
+ * агент не тільки втрачає бонус, а й перестає платити штрафи. Якщо ця сума
+ * від'ємна, дожити до кінця епізоду означає накопичити збиток, і тоді
+ * достатньо м'який штраф робить аварію найвигіднішою дією.
+ */
+const remainingReturn = computed(() => {
+  const r = regime.value
+  const perStep =
+    -wDist.value * r.dist -
+    wOmega.value * r.omega -
+    wTilt.value * r.tilt -
+    wJerk.value * r.jerk +
+    wAlive.value
+  const stepsLeft = STEPS - Math.round(STEPS * 0.35)
+  return perStep * stepsLeft * DT
 })
+
+/** Аварія вигідна, коли разовий штраф дешевший за те, що чекає попереду. */
+const crashPays = computed(() => crashPenalty.value > remainingReturn.value)
 </script>
 
 <template>
@@ -131,21 +146,23 @@ const lostByCrash = computed(() => {
         <b>{{ total >= 0 ? '+' : '' }}{{ total.toFixed(2) }}</b>
         <span>віддача за епізод</span>
       </div>
-      <div class="lab__stat">
-        <b>{{ lostByCrash.toFixed(2) }}</b>
-        <span>втрачений бонус за життя при аварії</span>
+      <div class="lab__stat" :class="remainingReturn >= 0 ? 'is-green' : 'is-warm'">
+        <b>{{ remainingReturn >= 0 ? '+' : '' }}{{ remainingReturn.toFixed(2) }}</b>
+        <span>віддача за решту епізоду, якщо не падати</span>
       </div>
-      <div class="lab__stat" :class="{ 'is-warm': Math.abs(crashPenalty) < lostByCrash }">
-        <b>{{ Math.abs(crashPenalty) < lostByCrash ? 'замало' : 'достатньо' }}</b>
+      <div class="lab__stat" :class="{ 'is-warm': crashPays }">
+        <b>{{ crashPays ? 'замало' : 'достатньо' }}</b>
         <span>чи стримує штраф за аварію</span>
       </div>
     </div>
 
     <p class="lab__note">
-      Виберіть «Політ з аварією» і зменшуйте штраф за модулем. Коли він стає
-      меншим за втрачений бонус за життя, розбитися вигідніше, ніж летіти:
-      агент навчиться падати одразу. Це не помилка алгоритму, а помилка
-      постановки — і знаходять її саме таким розкладом, а не за сумарною кривою.
+      Виберіть «Політ з аварією» і зменшуйте бонус за життя, доки віддача за
+      решту епізоду не стане від'ємною: летіти далі тепер означає накопичувати
+      збиток. Після цього зменшуйте штраф за аварію — щойно він виявиться
+      дешевшим за цей збиток, агентові вигідніше розбитися одразу. Це не
+      помилка алгоритму, а помилка постановки, і знаходять її саме таким
+      розкладом, а не за сумарною кривою.
     </p>
   </div>
 </template>
