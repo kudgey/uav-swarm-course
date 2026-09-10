@@ -9,7 +9,8 @@
   · ділить джерело на картки по `---`, поважаючи огорожі ```;
   · картка «Частина N · …» стає розділом `##`, звичайна картка — `###`;
     так права колонка сторінки дає дворівневий зміст замість плаского;
-  · `RAWBASE/xxx.png` → локальний `/figs/own/xxx.png`;
+  · `RAWBASE/xxx.png` → локальний `/figs/own/xxx.png` або `/figs/ext/xxx.png`
+    (запозичені рисунки — в `ext`, власні — в `own`);
   · картинка разом із підписом «Джерело: …» загортається у <Figure>;
   · `> СХЕМА: A -> B -> C` → компонент <Flow> (у Gamma це діаграма, і там
     вона обрізалася до чотирьох вузлів; у HTML обмеження немає);
@@ -133,7 +134,11 @@ def convert_card(card, alts, figs_present, missing, ctx):
             name = src.rsplit("/", 1)[-1]
             if name.rsplit(".", 1)[0] not in figs_present:
                 missing.append(name)
-            src = f"/figs/own/{name}"
+            # Запозичені рисунки лежать у figs/ext, власні — у figs/own.
+            # Тека визначається наявністю файла, а не назвою.
+            sub = "ext" if os.path.exists(
+                os.path.join(SITE, "public", "figs", "ext", name)) else "own"
+            src = f"/figs/{sub}/{name}"
 
             # підпис «Джерело: …» одразу під картинкою (можливо через порожній рядок)
             j = i + 1
@@ -213,8 +218,13 @@ def build(num, alts, figs_present, outputs):
 
 def main(argv):
     alts = json.load(open(ALTS, encoding="utf-8")) if os.path.exists(ALTS) else {}
-    figs_dir = os.path.join(SITE, "public", "figs", "own")
-    figs_present = {f.rsplit(".", 1)[0] for f in os.listdir(figs_dir) if f.endswith(".png")}
+    # Рисунки живуть у двох теках: own — власні, ext — запозичені з джерел.
+    figs_present = set()
+    for sub in ("own", "ext"):
+        d = os.path.join(SITE, "public", "figs", sub)
+        if os.path.isdir(d):
+            figs_present |= {f.rsplit(".", 1)[0]
+                             for f in os.listdir(d) if f.endswith(".png")}
     outputs = json.load(open(OUTPUTS, encoding="utf-8")) if os.path.exists(OUTPUTS) else {}
 
     nums = argv or [f"{i:02d}" for i in range(1, 13)]
