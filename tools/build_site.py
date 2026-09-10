@@ -38,15 +38,15 @@ WIDGETS: dict[tuple[str, str], str] = {
     ("02", "Результат коду: топологія проти часу"): "ConsensusLab",
     ("03", "Boids: три правила, з яких виникає рій"): "BoidsLab",
     ("06", "Внесок доданків у двох режимах польоту"): "RewardLab",
-    ("07", "Масштабування: навчили на восьми, полетіли сто двадцять вісім"): "ScalingLab",
-    ("08", "Числовий приклад: як складаються вектори"): "PotentialFieldLab",
+    ("08", "Масштабування: навчили на восьми, полетіли сто двадцять вісім"): "ScalingLab",
+    ("10", "Числовий приклад: як складаються вектори"): "PotentialFieldLab",
     ("04", "Результат коду: цінність поширюється від цілі"): "GridWorldLab",
-    ("10", "Частина 2 · Як чесно показати результат"): "SeedsLab",
+    ("12", "Частина 2 · Як чесно показати результат"): "SeedsLab",
     ("05", "Результат коду: усі п'ять ігор одразу"): "MatrixGameLab",
-    ("09", "Чого ця схема не гарантує"): "RobustnessLab",
+    ("11", "Чого ця схема не гарантує"): "RobustnessLab",
     ("04", "Дослідження проти використання"): "EpsilonLab",
     ("03", "Щільніший граф гірше терпить затримки"): "DelayLab",
-    ("08", "Зони відповідальності: розбиття Вороного"): "VoronoiLab",
+    ("10", "Зони відповідальності: розбиття Вороного"): "VoronoiLab",
 }
 
 
@@ -217,7 +217,7 @@ def main(argv):
     figs_present = {f.rsplit(".", 1)[0] for f in os.listdir(figs_dir) if f.endswith(".png")}
     outputs = json.load(open(OUTPUTS, encoding="utf-8")) if os.path.exists(OUTPUTS) else {}
 
-    nums = argv or [f"{i:02d}" for i in range(1, 11)]
+    nums = argv or [f"{i:02d}" for i in range(1, 13)]
     total_missing, total_cards = [], 0
     for n in nums:
         r = build(n, alts, figs_present, outputs)

@@ -65,16 +65,18 @@ export default defineConfig({
         text: 'Блок C · Рій, що навчається',
         collapsed: false,
         items: [
-          { text: '07 · Багатоагентне навчання для роїв БПЛА', link: '/lectures/07' },
-          { text: '08 · Конкретні задачі роїв', link: '/lectures/08' }
+          { text: '07 · Багатоагентний градієнт політики', link: '/lectures/07' },
+          { text: '08 · Багатоагентне навчання для роїв БПЛА', link: '/lectures/08' },
+          { text: '09 · Практика багатоагентного навчання', link: '/lectures/09' },
+          { text: '10 · Конкретні задачі роїв', link: '/lectures/10' }
         ]
       },
       {
         text: 'Блок D · Надійність і реалізація',
         collapsed: false,
         items: [
-          { text: '09 · Безпека та робастність роїв БПЛА', link: '/lectures/09' },
-          { text: '10 · Реалізація та інструменти', link: '/lectures/10' }
+          { text: '11 · Безпека та робастність роїв БПЛА', link: '/lectures/11' },
+          { text: '12 · Реалізація та інструменти', link: '/lectures/12' }
         ]
       }
     ],

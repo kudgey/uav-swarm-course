@@ -31,7 +31,7 @@ OUTPUTS = os.path.join(SITE, ".vitepress", "outputs.json")
 SCRIPTS = {
     "01": "m01_code.py", "02": "m02_code.py", "03": "m03_code.py",
     "04": "m04_code.py", "05": "m05_code.py", "06": "m06_code.py",
-    "07": "m07_code.py", "08": "m08_metrics.py", "09": "m09_residual.py",
+    "08": "m07_code.py", "10": "m08_metrics.py", "11": "m09_residual.py",
 }
 # Модуль 10 показує фрагменти архітектури мережі й кроку навчання —
 # це ілюстрація форми коду, а не самодостатня програма.
@@ -85,7 +85,7 @@ def norm(s):
 
 def main(argv):
     write = "--write" in argv
-    nums = [a for a in argv if a != "--write"] or [f"{i:02d}" for i in range(1, 11)]
+    nums = [a for a in argv if a != "--write"] or [f"{i:02d}" for i in range(1, 13)]
     outputs = json.load(open(OUTPUTS, encoding="utf-8")) if os.path.exists(OUTPUTS) else {}
 
     total = ok_n = skip_n = fail_n = diff_n = 0
