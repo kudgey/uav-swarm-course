@@ -21,7 +21,8 @@ DIST = os.path.join(os.path.dirname(HERE), ".vitepress", "dist")
 
 UA = {"User-Agent": "Mozilla/5.0 (course link checker)"}
 # Видавці ставлять антибот-захист: 403 від них не означає, що посилання мертве.
-TOLERATED = {403, 202}
+# 429 — обмеження частоти: сайт живий, просто просить зачекати.
+TOLERATED = {403, 202, 429}
 
 
 def internal_targets():
