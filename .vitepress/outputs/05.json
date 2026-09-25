@@ -1,0 +1,8 @@
+{
+ "87d30d5cc48f": {
+  "out": "Prisoner's Dilemma     (D,D) -> (-3,-3)\nStag Hunt              (S,S) -> (+4,+4); (H,H) -> (+2,+2)\nChicken                (S,L) -> (+7,+2); (L,S) -> (+2,+7)\nBattle of the Sexes    (A,A) -> (+10,+7); (B,B) -> (+7,+10)\nRock-Paper-Scissors    детермінованих рівноваг немає (лише ймовірнісна)\n",
+  "sec": 0.1,
+  "ran": "2026-09-25",
+  "python": "3.14.0"
+ }
+}

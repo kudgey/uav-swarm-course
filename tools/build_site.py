@@ -16,11 +16,21 @@
     вона обрізалася до чотирьох вузлів; у HTML обмеження немає);
   · англійські alt-тексти (їх писали як пошукові запити для Gamma)
     замінює на українські з карти `alts.json`;
-  · у названі місця вставляє інтерактивні віджети.
+  · у названі місця вставляє інтерактивні віджети;
+  · блок ```python → <CodeFold> (код згорнутий, у шапці — що робить код,
+    скільки рядків і скільки виконувався) + <RunOutput> (вивід видний завжди
+    й під ним «На що дивитися»). Конвенція джерела:
+        <!-- code: що робить код -->        ← обов'язково, рядком перед блоком
+        ```python | ```python ext | ```python fragment
+        ```text                             ← вивід (крім fragment)
+        *На що дивитися: …*                 ← обов'язково для блоку з виводом
+    Вивід у джерелі має збігатися з фактичним прогоном (tools/run_examples.py
+    пише його в .vitepress/outputs/NN.json); інакше — помилка збірки.
 
   python3 tools/build_site.py            # усі 10
   python3 tools/build_site.py 01 02      # вибірково
 """
+import hashlib
 import json
 import os
 import re
@@ -30,7 +40,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 SITE = os.path.dirname(HERE)
 SRC = os.path.join(os.path.dirname(SITE), "gamma_course", "decks_new")
 ALTS = os.path.join(SITE, ".vitepress", "alts.json")
-OUTPUTS = os.path.join(SITE, ".vitepress", "outputs.json")
+OUTPUTS = os.path.join(SITE, ".vitepress", "outputs")   # NN.json: фактичний вивід блоків
 
 # Куди які віджети ставити: (модуль, точний заголовок картки) → тег компонента.
 # Віджет додається в кінець картки, після її тексту.
@@ -71,6 +81,124 @@ SOURCE = re.compile(r"^(Джерело[^:]*:.*)$")
 SCHEMA = re.compile(r"^>\s*СХЕМА:\s*(.+)$")
 
 
+TITLE = re.compile(r"^<!--\s*code:\s*(.+?)\s*-->\s*$")
+LOOK = re.compile(r"^\*На що дивитися:.+\*\s*$")
+CONTINUATION = "# продовження попереднього блоку"
+NOTE_CONT = "*Продовження блоку вище: цей код виконується разом із попереднім.*"
+RUNNABLE = ("python", "python ext")      # ext — потрібен пакет поза базовим стеком
+FRAGMENT = "python fragment"             # не виконується, позначений як фрагмент
+MAX_OUT_LINES = 25
+RAW_DICT = re.compile(r"\{'[^']*':|\{\"[^\"]*\":")
+
+
+def block_hash(code):
+    """Хеш коду блоку — ключ в outputs/NN.json (спільний із run_examples.py)."""
+    return hashlib.sha1(code.strip().encode("utf-8")).hexdigest()[:12]
+
+
+def read_block(lines, i):
+    """Блок коду з рядка i (```python…) разом із виводом і «На що дивитися».
+
+    Повертає (lang, code, out, note, наступний індекс). out — рядки блоку
+    ```text одразу після коду (через порожні рядки) або None; note — рядок
+    «*На що дивитися: …*» одразу після виводу чи коду, або None.
+    """
+    lang = lines[i][3:].strip()
+    j = i + 1
+    while j < len(lines) and not lines[j].startswith("```"):
+        j += 1
+    code, nxt = lines[i + 1:j], j + 1
+
+    def skip(k):
+        while k < len(lines) and not lines[k].strip():
+            k += 1
+        return k
+
+    out = None
+    k = skip(nxt)
+    if k < len(lines) and lines[k].strip() == "```text":
+        e = k + 1
+        while e < len(lines) and not lines[e].startswith("```"):
+            e += 1
+        out, nxt = lines[k + 1:e], e + 1
+        k = skip(nxt)
+    note = None
+    if k < len(lines) and LOOK.match(lines[k].strip()):
+        note, nxt = lines[k].strip(), k + 1
+    return lang, code, out, note, nxt
+
+
+def code_blocks(text):
+    """Усі блоки python* джерела по порядку: [(lang, code, out, note, title)]."""
+    lines, res, i, title = text.split("\n"), [], 0, None
+    while i < len(lines):
+        m = TITLE.match(lines[i])
+        if m:
+            title, i = m.group(1), i + 1
+            continue
+        if lines[i].startswith("```python"):
+            lang, code, out, note, i = read_block(lines, i)
+            res.append((lang, "\n".join(code), out, note, title))
+            title = None
+            continue
+        if lines[i].startswith("```"):          # інші огорожі пропускаємо цілком
+            i += 1
+            while i < len(lines) and not lines[i].startswith("```"):
+                i += 1
+        if lines[i if i < len(lines) else -1].strip():
+            title = None
+        i += 1
+    return res
+
+
+def attr(s):
+    return s.replace("&", "&amp;").replace('"', "&quot;").replace("<", "&lt;")
+
+
+def emit_block(lang, code, out, note, title, ctx):
+    """Блок python → <CodeFold> (згорнутий код) + <RunOutput> (вивід і «На що дивитися»)."""
+    errs, head = ctx["errors"], (code[0][:50] if code else "(порожній)")
+    res = []
+    if code and code[0].strip() == CONTINUATION:
+        res += ["", NOTE_CONT]
+    if not title:
+        errs.append(f"блок без «<!-- code: що робить код -->» перед ним: {head}")
+        title = "Код"
+    if lang not in RUNNABLE + (FRAGMENT,):
+        errs.append(f"невідома мітка блоку «{lang}»: {head}")
+    frag = lang == FRAGMENT
+    rec = None
+    if frag:
+        ctx["fragments"] += 1
+        if out is not None:
+            errs.append(f"фрагмент «{title}» має вивід — фрагменти не виконуються")
+    else:
+        ctx["runnable"] += 1
+        rec = ctx["outputs"].get(block_hash("\n".join(code)))
+        if rec is None:
+            errs.append(f"«{title}»: немає прогону — запустіть tools/run_examples.py {ctx['num']}")
+        if out is None:
+            errs.append(f"«{title}»: після коду немає блоку ```text із виводом")
+        elif rec is not None and rec["out"].strip("\n") != "\n".join(out).strip("\n"):
+            errs.append(f"«{title}»: вивід у джерелі не збігається з фактичним прогоном")
+        if out is not None:
+            if len(out) > MAX_OUT_LINES:
+                errs.append(f"«{title}»: вивід {len(out)} рядків (> {MAX_OUT_LINES})")
+            if RAW_DICT.search("\n".join(out)):
+                errs.append(f"«{title}»: у виводі сирий dict — друкуйте таблицею")
+        if not note:
+            errs.append(f"«{title}»: після виводу немає рядка «*На що дивитися: …*»")
+    sec = f' sec="{rec["sec"]}"' if rec and "sec" in rec else ""
+    res += ["", f'<CodeFold title="{attr(title)}" :lines="{len(code)}"{sec}{" fragment" if frag else ""}>',
+            "", "```python", *code, "```", "", "</CodeFold>", ""]
+    if not frag and out is not None:
+        res += ["<RunOutput>", "", "```text:no-line-numbers", *out, "```", ""]
+        if note:
+            res += ["<template #note>", "", note, "", "</template>", ""]
+        res += ["</RunOutput>", ""]
+    return res
+
+
 def parse_flow(spec):
     """`A -> B -> C | підписи: x; y; z` → (вузли, підписи)."""
     labels = []
@@ -89,25 +217,26 @@ def convert_card(card, alts, figs_present, missing, ctx):
     lines = card.split("\n")
     out, i, fence = [], 0, False
     is_part = False
+    title = None
 
     while i < len(lines):
         line = lines[i]
 
+        m = TITLE.match(line) if not fence else None
+        if m:
+            title = m.group(1)
+            i += 1
+            continue
+
+        if line.startswith("```python") and not fence:
+            lang, code, got, note, i = read_block(lines, i)
+            out += emit_block(lang, code, got, note, title, ctx)
+            title = None
+            continue
+
         if line.startswith("```"):
-            closing = fence
             fence = not fence
             out.append(line)
-            if closing:
-                # Вивід програми вже є в джерелі окремою карткою «Результат…»,
-                # тому другий раз його сюди не вставляємо: раніше через це
-                # той самий текст друкувався на сторінці двічі поспіль, ще й
-                # із службовим рядком збірки (ім'я PNG, розмір), якого код
-                # не друкує. Звірку виводу з кодом робить tools/run_examples.py.
-                if ctx.get("was_python"):
-                    ctx["py"] += 1
-                    ctx["was_python"] = False
-            else:
-                ctx["was_python"] = line.strip().startswith("```python")
             i += 1
             continue
 
@@ -115,6 +244,10 @@ def convert_card(card, alts, figs_present, missing, ctx):
             out.append(line)
             i += 1
             continue
+
+        if title is not None and line.strip():
+            ctx["errors"].append(f"«<!-- code: {title} -->» стоїть не безпосередньо перед блоком коду")
+            title = None
 
         m = SCHEMA.match(line.strip())
         if m:
@@ -181,11 +314,13 @@ def heading_of(card):
     return ""
 
 
-def build(num, alts, figs_present, outputs):
+def build(num, alts, figs_present, errors):
     src = os.path.join(SRC, f"mod{num}.md")
     cards = split_cards(open(src, encoding="utf-8").read())
     missing, used_widgets = [], []
-    ctx = {"num": num, "py": 0, "was_python": False, "outputs": outputs}
+    f = os.path.join(OUTPUTS, f"{num}.json")
+    outputs = json.load(open(f, encoding="utf-8")) if os.path.exists(f) else {}
+    ctx = {"num": num, "runnable": 0, "fragments": 0, "outputs": outputs, "errors": []}
 
     first = cards[0]
     title = heading_of(first)
@@ -210,9 +345,11 @@ def build(num, alts, figs_present, outputs):
     os.makedirs(os.path.dirname(dst), exist_ok=True)
     open(dst, "w", encoding="utf-8").write(front + page)
 
+    errors += [f"мод {num}: {e}" for e in ctx["errors"]]
     return {
         "num": num, "title": title, "cards": len(cards), "parts": n_parts,
-        "widgets": used_widgets, "runs": ctx["py"], "missing": missing, "chars": len(page),
+        "widgets": used_widgets, "runs": ctx["runnable"], "frags": ctx["fragments"],
+        "missing": missing, "chars": len(page),
     }
 
 
@@ -225,21 +362,26 @@ def main(argv):
         if os.path.isdir(d):
             figs_present |= {f.rsplit(".", 1)[0]
                              for f in os.listdir(d) if f.endswith(".png")}
-    outputs = json.load(open(OUTPUTS, encoding="utf-8")) if os.path.exists(OUTPUTS) else {}
-
     nums = argv or [f"{i:02d}" for i in range(1, 13)]
-    total_missing, total_cards = [], 0
+    total_missing, total_cards, errors = [], 0, []
     for n in nums:
-        r = build(n, alts, figs_present, outputs)
+        r = build(n, alts, figs_present, errors)
         w = ", ".join(sorted(set(r["widgets"]))) or "—"
+        code = f"код {r['runs']}+{r['frags']}ф" if r["runs"] + r["frags"] else "код —"
         print(f"  {r['num']}  {r['cards']:>3} секцій  {r['parts']} частин  "
-              f"{r['chars']:>6} симв.  віджети: {w}")
+              f"{r['chars']:>6} симв.  {code:10s} віджети: {w}")
         total_missing += r["missing"]
         total_cards += r["cards"]
     if total_missing:
         print("\n  ВІДСУТНІ рисунки:", ", ".join(sorted(set(total_missing))))
     print(f"\nсторінок зібрано: {len(nums)}, секцій: {total_cards}")
+    if errors:
+        print(f"\nПОМИЛКИ ({len(errors)}):")
+        for e in errors:
+            print("  " + e)
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    sys.exit(main(sys.argv[1:]))
