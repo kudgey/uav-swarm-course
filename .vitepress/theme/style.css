@@ -731,3 +731,34 @@ html.uk-pres .uk-figure__frame img {
 /* сітки віджетів не мають розповзатися ширше за колонку */
 .lab > div,
 .lab section { min-width: 0; }
+
+/* ==========================================================================
+   Телефон: широка таблиця прокручується всередині себе, а не розтягує сторінку.
+   Базове правило вище ставить table { display: table }, і це вимикає штатну
+   обгортку VitePress із прокруткою — тут повертаємо її для вузьких екранів.
+   Перевірка: node tools/check_mobile.mjs (ширина 375 px, усі 12 модулів).
+   ========================================================================== */
+@media (max-width: 720px) {
+  .vp-doc table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    font-size: 0.86rem;
+  }
+  .vp-doc table th,
+  .vp-doc table td { min-width: 7.5rem; }
+  /* таблиці всередині віджетів: теж прокручуються, але без примусової ширини клітинок */
+  .vp-doc .lab table,
+  .vp-doc .tl table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .vp-doc .lab th, .vp-doc .lab td,
+  .vp-doc .tl th, .vp-doc .tl td { min-width: 0; }
+  .vp-doc mjx-container[display="true"] {
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-width: 100%;
+  }
+  /* формулу MathJax не стискаємо: у неї зафіксована висота, і стиснута
+     вона стала б дрібною посеред порожнього рядка — хай краще прокручується */
+  .vp-doc :not(mjx-container) > svg,
+  .vp-doc img { max-width: 100%; height: auto; }
+}
