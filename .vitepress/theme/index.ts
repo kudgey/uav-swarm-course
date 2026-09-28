@@ -27,6 +27,7 @@ import DelayLab from './components/DelayLab.vue'
 import VoronoiLab from './components/VoronoiLab.vue'
 import RunOutput from './components/RunOutput.vue'
 import CodeFold from './components/CodeFold.vue'
+import PPOClipLab from './components/PPOClipLab.vue'
 import PresToggle from './components/PresToggle.vue'
 
 export default {
@@ -57,6 +58,7 @@ export default {
     app.component('VoronoiLab', VoronoiLab)
     app.component('RunOutput', RunOutput)
     app.component('CodeFold', CodeFold)
+    app.component('PPOClipLab', PPOClipLab)
     app.component('PresToggle', PresToggle)
   }
 } satisfies Theme

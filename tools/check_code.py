@@ -60,7 +60,8 @@ def check_module(num, tmp):
             continue
         first = code.strip().split("\n", 1)[0].strip()
         chain = chain + [code] if first == CONTINUATION and chain else [code]
-        g = os.path.join(tmp, f"c{num}_b{k:02d}.py")
+        # продовження — як наступна комірка блокнота: імпорти в ній дозволені (E402)
+        g = os.path.join(tmp, f"{'k' if len(chain) > 1 else 'c'}{num}_b{k:02d}.py")
         open(g, "w", encoding="utf-8").write("\n\n\n".join(chain) + "\n")
         lint_files.append(g)
     return err, warn, fmt_files, lint_files, frag_files
@@ -84,14 +85,17 @@ def main(argv):
                                capture_output=True, text=True)
             for f in re.findall(r"(m\d\d_b\d\d)\.py", r.stdout + r.stderr):
                 err.append(f"{f.replace('_', ' ')}: не відформатовано `ruff format`")
-        for files, extra in ((lint, []), (frag, ["--ignore", "F821,F841,F401,B018"])):
+        cont = [f for f in lint if os.path.basename(f).startswith("k")]
+        lint = [f for f in lint if f not in cont]
+        for files, extra in ((lint, []), (cont, ["--ignore", "E402"]),
+                             (frag, ["--ignore", "F821,F841,F401,B018"])):
             if not files:
                 continue
             r = subprocess.run(RUFF + ["check", "--select", RUFF_RULES, "--line-length", "88",
                                        "--output-format", "concise", "--no-cache", *extra, *files],
                                capture_output=True, text=True)
             for line in r.stdout.splitlines():
-                m = re.match(r".*[cm](\d\d)_b(\d\d)\.py:(\d+):\d+: (.+)$", line)
+                m = re.match(r".*[ckm](\d\d)_b(\d\d)\.py:(\d+):\d+: (.+)$", line)
                 if m:
                     err.append(f"мод {m.group(1)} блок {int(m.group(2))}: ruff — {m.group(4)} "
                                f"(рядок {m.group(3)} ланцюжка)")

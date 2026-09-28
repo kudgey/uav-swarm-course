@@ -15,6 +15,9 @@
   · ```python ext — потрібен пакет поза базовим стеком (lbforaging).
     Виконується інтерпретатором зі змінної UAV_EXT_PYTHON; без неї береться
     збережений вивід того самого коду (ключ — хеш коду);
+  · ```python long — довгий прогін (навчання політики, хвилини). Виконується
+    лише з прапорцем --long і UAV_EXT_PYTHON, у теці gamma_course/viz: файли
+    даних, які він зберігає, підхоплює скрипт рисунка. Без --long — збережений вивід;
   · помилка, таймаут, порожній вивід, розбіжність із джерелом — код повернення 1.
 
 Фактичний вивід і час виконання пишуться в .vitepress/outputs/NN.json:
@@ -24,6 +27,7 @@
   python3 tools/run_examples.py 07 10        # вибірково
   python3 tools/run_examples.py 07 --fix     # переписати ```text у джерелі фактичним виводом
   UAV_EXT_PYTHON=/path/to/venv/bin/python python3 tools/run_examples.py 09 12
+  UAV_EXT_PYTHON=/path/to/venv/bin/python python3 tools/run_examples.py 04 --long
 """
 import datetime
 import json
@@ -38,6 +42,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_site import CONTINUATION, FRAGMENT, OUTPUTS, SRC, block_hash, code_blocks  # noqa: E402
 
 TIMEOUT = 180
+LONG_TIMEOUT = 3600
+VIZ = os.path.join(os.path.dirname(SRC), "viz")   # тут довгі блоки лишають свої файли даних
 
 RUNNER = r'''
 import contextlib, io, json, os, sys, warnings
@@ -68,7 +74,7 @@ def chains(blocks):
     return res
 
 
-def run_chain(pieces, python):
+def run_chain(pieces, python, long=False):
     with tempfile.TemporaryDirectory() as tmp:
         runner, src, dst = (os.path.join(tmp, n) for n in ("runner.py", "in.json", "out.json"))
         open(runner, "w", encoding="utf-8").write(RUNNER)
@@ -77,9 +83,10 @@ def run_chain(pieces, python):
         t0 = time.time()
         try:
             p = subprocess.run([python, runner, src, dst], capture_output=True, text=True,
-                               timeout=TIMEOUT, cwd=tmp, env=env)
+                               timeout=LONG_TIMEOUT if long else TIMEOUT,
+                               cwd=VIZ if long else tmp, env=env)
         except subprocess.TimeoutExpired:
-            return None, f"таймаут {TIMEOUT} с", time.time() - t0
+            return None, f"таймаут {LONG_TIMEOUT if long else TIMEOUT} с", time.time() - t0
         dt = time.time() - t0
         if p.returncode != 0:
             tail = "\n".join(p.stderr.strip().split("\n")[-4:])
@@ -105,7 +112,7 @@ def fix_source(num, code, actual):
     return bool(n)
 
 
-def run_module(num, fix):
+def run_module(num, fix, long_ok=False):
     path = os.path.join(SRC, f"mod{num}.md")
     blocks = code_blocks(open(path, encoding="utf-8").read())
     f = os.path.join(OUTPUTS, f"{num}.json")
@@ -116,16 +123,18 @@ def run_module(num, fix):
         h = block_hash(code)
         name = f"блок {k} «{title or code.strip().split(chr(10))[0][:40]}»"
         python = sys.executable
-        if lang == "python ext":
+        if lang in ("python ext", "python long"):
             python = os.environ.get("UAV_EXT_PYTHON")
-            if not python:
+            if not python or (lang == "python long" and not long_ok):
+                tag = lang.split()[1]
                 if h in prev and declared is not None and same(prev[h]["out"], "\n".join(declared)):
                     new[h] = prev[h]
-                    print(f"    {k:>2} [{h}] ext — збережений вивід ({prev[h].get('sec', '?')} с)")
+                    print(f"    {k:>2} [{h}] {tag} — збережений вивід ({prev[h].get('sec', '?')} с)")
                 else:
-                    errors.append(f"{name}: ext без збереженого виводу — задайте UAV_EXT_PYTHON")
+                    need = "--long і UAV_EXT_PYTHON" if tag == "long" else "UAV_EXT_PYTHON"
+                    errors.append(f"{name}: {tag} без збереженого виводу — запустіть із {need}")
                 continue
-        out, err, dt = run_chain(chain, python)
+        out, err, dt = run_chain(chain, python, long=lang == "python long")
         if err:
             errors.append(f"{name}: {err}")
             print(f"    {k:>2} [{h}] ✗ {dt:5.1f} с")
@@ -147,7 +156,7 @@ def run_module(num, fix):
                     if x != y:
                         print(f"          факт:    {x}\n          джерело: {y}")
         new[h] = {"out": out, "sec": round(dt, 1), "ran": datetime.date.today().isoformat(),
-                  "python": sys.version.split()[0] if python == sys.executable else "ext"}
+                  "python": sys.version.split()[0] if python == sys.executable else lang.split()[1]}
         print(f"    {k:>2} [{h}] {mark} {dt:5.1f} с")
     os.makedirs(OUTPUTS, exist_ok=True)
     if new:
@@ -159,12 +168,13 @@ def run_module(num, fix):
 
 def main(argv):
     fix = "--fix" in argv
+    long_ok = "--long" in argv
     nums = [a for a in argv if not a.startswith("--")] or [f"{i:02d}" for i in range(1, 13)]
     total = frags = 0
     errors = []
     for num in nums:
         print(f"  мод {num}")
-        n, fr, err = run_module(num, fix)
+        n, fr, err = run_module(num, fix, long_ok)
         total += n
         frags += fr
         errors += [f"мод {num}: {e}" for e in err]
