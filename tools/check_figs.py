@@ -21,10 +21,8 @@ SITE = os.path.dirname(HERE)
 COURSE = os.path.join(os.path.dirname(SITE), "gamma_course")
 IMG = re.compile(r"^!\[[^\]]*\]\(RAWBASE/([\w.-]+)\)\s*$")
 
-# Власні рисунки, чий скрипт не зберігся (середовище відкочувалося), — з поясненням.
-ALLOW = {
-    "m08-task-allocation.png": "власний рисунок курсу; скрипт утрачено під час відкату середовища",
-}
+# Винятків немає: кожен власний рисунок малює скрипт у gamma_course/viz.
+ALLOW: dict[str, str] = {}
 
 
 def main():
