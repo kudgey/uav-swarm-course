@@ -68,7 +68,7 @@ def check_module(num, tmp):
 
 
 def main(argv):
-    nums = argv or [f"{i:02d}" for i in range(1, 13)]
+    nums = argv or [f"{i:02d}" for i in range(1, 14)]
     err, warn, total = [], [], 0
     with tempfile.TemporaryDirectory() as tmp:
         fmt, lint, frag = [], [], []

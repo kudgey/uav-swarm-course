@@ -33,7 +33,7 @@ import { fileURLToPath } from 'node:url';
 const SITE = join(dirname(fileURLToPath(import.meta.url)), '..');
 const BASE = (process.argv[2] || 'http://localhost:4173').replace(/\/$/, '');
 const WIDTH = 375, HEIGHT = 812, TOL = 2;
-const PAGES = ['/', ...Array.from({ length: 12 }, (_, i) => `/lectures/${String(i + 1).padStart(2, '0')}`)];
+const PAGES = ['/', ...Array.from({ length: 13 }, (_, i) => `/lectures/${String(i + 1).padStart(2, '0')}`)];
 const CHROME = process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 
 const MEASURE = `(() => {

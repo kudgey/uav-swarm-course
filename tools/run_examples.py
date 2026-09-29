@@ -169,7 +169,7 @@ def run_module(num, fix, long_ok=False):
 def main(argv):
     fix = "--fix" in argv
     long_ok = "--long" in argv
-    nums = [a for a in argv if not a.startswith("--")] or [f"{i:02d}" for i in range(1, 13)]
+    nums = [a for a in argv if not a.startswith("--")] or [f"{i:02d}" for i in range(1, 14)]
     total = frags = 0
     errors = []
     for num in nums:

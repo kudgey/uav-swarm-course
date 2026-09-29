@@ -29,7 +29,7 @@ def main():
     viz = "\n".join(open(f, encoding="utf-8", errors="ignore").read()
                     for f in glob.glob(os.path.join(COURSE, "viz", "*.py")))
     bad, n_ext, n_own = [], 0, 0
-    for num in range(1, 13):
+    for num in range(1, 14):
         lines = open(os.path.join(COURSE, "decks_new", f"mod{num:02d}.md"), encoding="utf-8").read().split("\n")
         for i, line in enumerate(lines):
             m = IMG.match(line)
