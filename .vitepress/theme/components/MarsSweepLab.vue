@@ -114,7 +114,7 @@ const POS: Record<S | 'База', [number, number]> = {
       <path d="M388,94 Q420,120 445,158" class="ms__edge" :class="{ 'is-best': best('Точка B') === 1 }" marker-end="url(#ms-arrow)" />
       <!-- підписи Q на стрілках -->
       <text x="78" y="110" class="ms__q">{{ fmt(Q('Старт', 0)) }}</text>
-      <text x="265" y="213" class="ms__q" text-anchor="middle">{{ fmt(Q('Старт', 1)) }} · 50 % база, 50 % втрата</text>
+      <text x="265" y="213" class="ms__q" text-anchor="middle">{{ fmt(Q('Старт', 1)) }} · 50 % база, 50 % «Зруйнований»</text>
       <text x="152" y="176" class="ms__q" text-anchor="middle">{{ fmt(Q('Точка A', 0)) }}</text>
       <text x="282" y="52" class="ms__q" text-anchor="middle">{{ fmt(Q('Точка A', 1)) }}</text>
       <text x="284" y="100" class="ms__q" text-anchor="middle">{{ fmt(Q('Точка B', 0)) }}</text>

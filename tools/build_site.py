@@ -87,7 +87,7 @@ SCHEMA = re.compile(r"^>\s*СХЕМА:\s*(.+)$")
 TITLE = re.compile(r"^<!--\s*code:\s*(.+?)\s*-->\s*$")
 LOOK = re.compile(r"^\*На що дивитися:.+\*\s*$")
 CONTINUATION = "# продовження попереднього блоку"
-NOTE_CONT = "*Продовження блоку вище: цей код виконується разом із попереднім.*"
+NOTE_CONT = "*Продовження блоку «{prev}»: цей код виконується разом із ним.*"
 RUNNABLE = ("python", "python ext", "python long")   # ext — пакет поза базовим стеком;
 #   long — довгий прогін (навчання): виконується лише з --long, інакше збережений вивід
 FRAGMENT = "python fragment"             # не виконується, позначений як фрагмент
@@ -164,7 +164,7 @@ def emit_block(lang, code, out, note, title, ctx):
     errs, head = ctx["errors"], (code[0][:50] if code else "(порожній)")
     res = []
     if code and code[0].strip() == CONTINUATION:
-        res += ["", NOTE_CONT]
+        res += ["", NOTE_CONT.format(prev=ctx.get("prev_title") or "вище")]
     if not title:
         errs.append(f"блок без «<!-- code: що робить код -->» перед ним: {head}")
         title = "Код"
@@ -192,6 +192,7 @@ def emit_block(lang, code, out, note, title, ctx):
                 errs.append(f"«{title}»: у виводі сирий dict — друкуйте таблицею")
         if not note:
             errs.append(f"«{title}»: після виводу немає рядка «*На що дивитися: …*»")
+    ctx["prev_title"] = title
     sec = f' sec="{rec["sec"]}"' if rec and "sec" in rec else ""
     res += ["", f'<CodeFold title="{attr(title)}" :lines="{len(code)}"{sec}{" fragment" if frag else ""}>',
             "", "```python", *code, "```", "", "</CodeFold>", ""]

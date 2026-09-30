@@ -122,7 +122,7 @@ function path(avg: number[]) {
     <svg class="ep__plot" :viewBox="`0 0 ${W} ${H}`" aria-label="Середня винагорода за крок">
       <line :x1="34" :y1="py(BEST)" :x2="W - 12" :y2="py(BEST)" class="ep__ideal" />
       <text :x="W - 12" :y="py(BEST) - 4" class="ep__tick" text-anchor="end">
-        межа {{ BEST.toFixed(1) }}
+        найкращий важіль: {{ BEST.toFixed(1).replace('.', ',') }}
       </text>
 
       <path v-for="c in curves" :key="c.e" :d="path(c.avg)" class="ep__ghost" />
@@ -143,7 +143,7 @@ function path(avg: number[]) {
       </div>
       <div class="lab__stat" :class="regret > 40 ? 'is-warm' : 'is-green'">
         <b>{{ regret.toFixed(0) }}</b>
-        <span>жаль за 100 кроків</span>
+        <span>недобір за 100 кроків відносно найкращого важеля (<i>regret</i>)</span>
       </div>
     </div>
 
