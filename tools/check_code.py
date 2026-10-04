@@ -22,7 +22,7 @@ import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_site import (  # noqa: E402
-    CONTINUATION, FRAGMENT, MAX_OUT_LINES, RAW_DICT, SRC, code_blocks,
+    FRAGMENT, MAX_OUT_LINES, RAW_DICT, SRC, code_blocks, resolve_chains,
 )
 
 RUFF_RULES = "E,F,W,I,B,UP"
@@ -32,8 +32,9 @@ RUFF = [sys.executable, "-m", "ruff"]
 def check_module(num, tmp):
     blocks = code_blocks(open(os.path.join(SRC, f"mod{num}.md"), encoding="utf-8").read())
     err, warn = [], []
-    fmt_files, lint_files, frag_files, chain = [], [], [], []
-    for k, (lang, code, out, note, title) in enumerate(blocks, 1):
+    fmt_files, lint_files, frag_files = [], [], []
+    for k, ((lang, code, out, note, title), (chain, _parent, cerr)) in enumerate(
+            zip(blocks, resolve_chains(blocks)), 1):
         name = f"мод {num} блок {k}"
         n = len(code.split("\n"))
         if not title:
@@ -54,12 +55,11 @@ def check_module(num, tmp):
         f = os.path.join(tmp, f"m{num}_b{k:02d}.py")
         open(f, "w", encoding="utf-8").write(code + "\n")
         fmt_files.append(f)
+        if cerr:
+            err.append(f"{name}: продовження блоку {cerr}")
         if lang == FRAGMENT:
-            chain = []
             frag_files.append(f)
             continue
-        first = code.strip().split("\n", 1)[0].strip()
-        chain = chain + [code] if first == CONTINUATION and chain else [code]
         # продовження — як наступна комірка блокнота: імпорти в ній дозволені (E402)
         g = os.path.join(tmp, f"{'k' if len(chain) > 1 else 'c'}{num}_b{k:02d}.py")
         open(g, "w", encoding="utf-8").write("\n\n\n".join(chain) + "\n")

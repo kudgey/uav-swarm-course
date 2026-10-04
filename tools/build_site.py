@@ -56,7 +56,9 @@ WIDGETS: dict[tuple[str, str], str] = {
     ("12", "Чого ця схема не гарантує"): "RobustnessLab",
     ("04", "ε-жадібний вибір на бандиті"): "EpsilonLab",
     ("05", "PPO на числах: де обрізання зупиняє крок"): "PPOClipLab",
-    ("05", "DQN на числах: навіщо заморожувати ціль"): "MovingTargetLab",
+    ("05", "Тріада на числах: w → 2w"): "DeadlyTriadLab",
+    ("05", "Ціль і втрата на числах"): "DQNLoopLab",
+    ("05", "Політ крок за кроком"): "HoverFlightLab",
     ("03", "Щільніший граф гірше терпить затримки"): "DelayLab",
     ("11", "Зони відповідальності: розбиття Вороного"): "VoronoiLab",
 }
@@ -85,6 +87,11 @@ SCHEMA = re.compile(r"^>\s*СХЕМА:\s*(.+)$")
 TITLE = re.compile(r"^<!--\s*code:\s*(.+?)\s*-->\s*$")
 LOOK = re.compile(r"^\*На що дивитися:.+\*\s*$")
 CONTINUATION = "# продовження попереднього блоку"
+# Іменоване продовження: блок виконується разом із ланцюжком блоку, чия назва
+# (<!-- code: … -->) починається з указаного тексту. Так кілька блоків лекції
+# можуть продовжувати той самий блок (наприклад, середовище), а між ними
+# стоять самостійні блоки.
+NAMED_CONT = re.compile(r"^# продовження блоку «(.+?)»\s*$")
 NOTE_CONT = "*Продовження блоку «{prev}»: цей код виконується разом із ним.*"
 RUNNABLE = ("python", "python ext", "python long")   # ext — пакет поза базовим стеком;
 #   long — довгий прогін (навчання): виконується лише з --long, інакше збережений вивід
@@ -153,6 +160,40 @@ def code_blocks(text):
     return res
 
 
+def resolve_chains(blocks):
+    """Для кожного блоку з code_blocks: (ланцюжок кодів, назва батьківського блоку, помилка).
+
+    Фрагмент обриває лінійний ланцюжок і сам не виконується (ланцюжок None).
+    `# продовження попереднього блоку` — до ланцюжка попереднього блоку;
+    `# продовження блоку «початок назви»` — до ланцюжка названого блоку.
+    """
+    res, chain, prev_title, seen = [], [], None, []
+    for lang, code, _out, _note, title in blocks:
+        first = code.strip().split("\n", 1)[0].strip()
+        if lang == FRAGMENT:
+            chain, prev_title = [], None
+            res.append((None, None, None))
+            continue
+        parent, err = None, None
+        m = NAMED_CONT.match(first)
+        if m:
+            hits = [(t, c) for t, c in seen if t and t.startswith(m.group(1))]
+            if len(hits) == 1:
+                parent, chain = hits[0][0], hits[0][1] + [code]
+            else:
+                err = (f"«{m.group(1)}»: " + ("немає блоку з такою назвою вище" if not hits
+                                              else f"підходить {len(hits)} блоків"))
+                chain = [code]
+        elif first == CONTINUATION and chain:
+            parent, chain = prev_title, chain + [code]
+        else:
+            chain = [code]
+        seen.append((title, list(chain)))
+        prev_title = title
+        res.append((list(chain), parent, err))
+    return res
+
+
 def attr(s):
     return s.replace("&", "&amp;").replace('"', "&quot;").replace("<", "&lt;")
 
@@ -161,8 +202,13 @@ def emit_block(lang, code, out, note, title, ctx):
     """Блок python → <CodeFold> (згорнутий код) + <RunOutput> (вивід і «На що дивитися»)."""
     errs, head = ctx["errors"], (code[0][:50] if code else "(порожній)")
     res = []
-    if code and code[0].strip() == CONTINUATION:
-        res += ["", NOTE_CONT.format(prev=ctx.get("prev_title") or "вище")]
+    k = ctx["block_i"]
+    ctx["block_i"] += 1
+    _chain, parent, cerr = ctx["chains"][k] if k < len(ctx["chains"]) else (None, None, None)
+    if cerr:
+        errs.append(f"продовження блоку {cerr}")
+    if parent:
+        res += ["", NOTE_CONT.format(prev=parent)]
     if not title:
         errs.append(f"блок без «<!-- code: що робить код -->» перед ним: {head}")
         title = "Код"
@@ -190,7 +236,6 @@ def emit_block(lang, code, out, note, title, ctx):
                 errs.append(f"«{title}»: у виводі сирий dict — друкуйте таблицею")
         if not note:
             errs.append(f"«{title}»: після виводу немає рядка «*На що дивитися: …*»")
-    ctx["prev_title"] = title
     sec = f' sec="{rec["sec"]}"' if rec and "sec" in rec else ""
     res += ["", f'<CodeFold title="{attr(title)}" :lines="{len(code)}"{sec}{" fragment" if frag else ""}>',
             "", "```python", *code, "```", "", "</CodeFold>", ""]
@@ -319,11 +364,13 @@ def heading_of(card):
 
 def build(num, alts, figs_present, errors):
     src = os.path.join(SRC, f"mod{num}.md")
-    cards = split_cards(open(src, encoding="utf-8").read())
+    text = open(src, encoding="utf-8").read()
+    cards = split_cards(text)
     missing, used_widgets = [], []
     f = os.path.join(OUTPUTS, f"{num}.json")
     outputs = json.load(open(f, encoding="utf-8")) if os.path.exists(f) else {}
-    ctx = {"num": num, "runnable": 0, "fragments": 0, "outputs": outputs, "errors": []}
+    ctx = {"num": num, "runnable": 0, "fragments": 0, "outputs": outputs, "errors": [],
+           "chains": resolve_chains(code_blocks(text)), "block_i": 0}
 
     first = cards[0]
     title = heading_of(first)

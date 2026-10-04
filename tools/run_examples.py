@@ -39,7 +39,7 @@ import tempfile
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from build_site import CONTINUATION, FRAGMENT, OUTPUTS, SRC, block_hash, code_blocks  # noqa: E402
+from build_site import FRAGMENT, OUTPUTS, SRC, block_hash, code_blocks, resolve_chains  # noqa: E402
 
 TIMEOUT = 180
 LONG_TIMEOUT = 3600
@@ -62,16 +62,10 @@ json.dump(outs, open(sys.argv[2], "w", encoding="utf-8"), ensure_ascii=False)
 
 
 def chains(blocks):
-    """Для кожного блоку, що виконується, — ланцюжок кодів (попередні + свій)."""
-    res, chain = [], []
-    for lang, code, out, note, title in blocks:
-        if lang == FRAGMENT:
-            chain = []
-            continue
-        first = code.strip().split("\n", 1)[0].strip()
-        chain = chain + [code] if first == CONTINUATION and chain else [code]
-        res.append((lang, code, out, title, list(chain)))
-    return res
+    """Для кожного блоку, що виконується, — ланцюжок кодів (батьківські + свій)."""
+    return [(lang, code, out, title, chain)
+            for (lang, code, out, _note, title), (chain, _parent, _err) in zip(blocks, resolve_chains(blocks))
+            if lang != FRAGMENT]
 
 
 def run_chain(pieces, python, long=False):
