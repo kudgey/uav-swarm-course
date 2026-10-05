@@ -29,7 +29,6 @@ import RunOutput from './components/RunOutput.vue'
 import CodeFold from './components/CodeFold.vue'
 import PPOClipLab from './components/PPOClipLab.vue'
 import MarsSweepLab from './components/MarsSweepLab.vue'
-import DeadlyTriadLab from './components/DeadlyTriadLab.vue'
 import PresToggle from './components/PresToggle.vue'
 
 export default {
@@ -62,10 +61,11 @@ export default {
     app.component('CodeFold', CodeFold)
     app.component('PPOClipLab', PPOClipLab)
     app.component('MarsSweepLab', MarsSweepLab)
-    app.component('DeadlyTriadLab', DeadlyTriadLab)
     // віджети з великими записаними даними вантажаться окремо, лише на своїй сторінці
     app.component('DQNLoopLab', defineAsyncComponent(() => import('./components/DQNLoopLab.vue')))
     app.component('HoverFlightLab', defineAsyncComponent(() => import('./components/HoverFlightLab.vue')))
+    app.component('PolicyStepLab', defineAsyncComponent(() => import('./components/PolicyStepLab.vue')))
+    app.component('PolicyOutputLab', defineAsyncComponent(() => import('./components/PolicyOutputLab.vue')))
     app.component('PresToggle', PresToggle)
   }
 } satisfies Theme
