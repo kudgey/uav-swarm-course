@@ -118,6 +118,7 @@ const s = (v: number) => (v < 0 ? '−' + Math.abs(v) : String(v))
       <span class="mg__key"><i class="mg__swatch is-nash" /> рівновага Неша</span>
       <span class="mg__key"><i class="mg__swatch is-pareto" /> Парето-оптимальна клітинка</span>
       <span class="mg__key">натисніть на клітинку — добробут і справедливість</span>
+      <span class="mg__key">Парето, добробут і справедливість означено в частині 3</span>
     </div>
 
     <div class="lab__stats">

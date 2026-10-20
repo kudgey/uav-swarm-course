@@ -54,7 +54,7 @@ WIDGETS: dict[tuple[str, str], str] = {
     ("13", "Частина 2 · Як чесно показати результат"): "SeedsLab",
     ("06", "Імовірнісні рівноваги: умова байдужості"): "MatrixGameLab",
     ("06", "Нестаціонарність у прогоні"): "IQLStepLab",
-    ("06", "Що вивчили CQL і IQL"): "CorridorLab",
+    ("06", "Політ крок за кроком"): "CorridorLab",
     ("12", "Чого ця схема не гарантує"): "RobustnessLab",
     ("04", "ε-жадібний вибір на бандиті"): "EpsilonLab",
     ("05", "PPO на числах: де обрізання зупиняє крок"): "PPOClipLab",
@@ -98,9 +98,10 @@ CONTINUATION = "# продовження попереднього блоку"
 # стоять самостійні блоки.
 NAMED_CONT = re.compile(r"^# продовження блоку «(.+?)»\s*$")
 NOTE_CONT = "*Продовження блоку «{prev}»: цей код виконується разом із ним.*"
-RUNNABLE = ("python", "python ext", "python long")   # ext — пакет поза базовим стеком;
+RUNNABLE = ("python", "python ext", "python long", "python check")   # ext — пакет поза базовим стеком;
 #   long — довгий прогін (навчання): виконується лише з --long, інакше збережений вивід
 FRAGMENT = "python fragment"             # не виконується, позначений як фрагмент
+CHECK = "python check"                   # виконується; код і вивід сховано в плашку «Перевірка кодом»
 MAX_OUT_LINES = 25
 RAW_DICT = re.compile(r"\{'[^']*':|\{\"[^\"]*\":")
 
@@ -242,6 +243,15 @@ def emit_block(lang, code, out, note, title, ctx):
         if not note:
             errs.append(f"«{title}»: після виводу немає рядка «*На що дивитися: …*»")
     sec = f' sec="{rec["sec"]}"' if rec and "sec" in rec else ""
+    if lang == CHECK:
+        # Перевірка: код і вивід разом у закритій плашці — сторінку не захаращують, число лишається перевірним.
+        res += ["", f'<CodeFold title="{attr(title)}" :lines="{len(code)}"{sec} check>', "",
+                "```python", *code, "```", "", "<div class=\"cf__out\">", "",
+                "```text:no-line-numbers", *(out or []), "```", "", "</div>", ""]
+        if note:
+            res += [note, ""]
+        res += ["</CodeFold>", ""]
+        return res
     res += ["", f'<CodeFold title="{attr(title)}" :lines="{len(code)}"{sec}{" fragment" if frag else ""}>',
             "", "```python", *code, "```", "", "</CodeFold>", ""]
     if not frag and out is not None:

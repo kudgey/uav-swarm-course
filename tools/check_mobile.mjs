@@ -83,6 +83,7 @@ const CODE_UI = `(async () => {
     const body = cf.querySelector('.cf__body');
     if (!body || getComputedStyle(body).display !== 'none') r.openByDefault++;
     if (cf.classList.contains('is-fragment')) { r.frags++; continue; }
+    if (cf.classList.contains('is-check')) { r.checks = (r.checks || 0) + 1; continue; }   // вивід усередині плашки
     const ro = cf.nextElementSibling;
     if (!ro || !ro.classList.contains('ro')) r.noOutput++;
     else if (getComputedStyle(ro).display === 'none' || ro.offsetHeight < 30 || !ro.querySelector('pre')) r.hiddenOutput++;
@@ -93,7 +94,7 @@ const CODE_UI = `(async () => {
     const body = cf.querySelector('.cf__body');
     const btn = cf.querySelector('.cf__btn');
     if (!body || getComputedStyle(body).display === 'none' || !body.querySelector('pre') ||
-        body.offsetHeight < 30 || !btn || btn.textContent.trim() !== 'Сховати код') r.notOpened++;
+        body.offsetHeight < 30 || !btn || !btn.textContent.trim().startsWith('Сховати')) r.notOpened++;
   }
   return JSON.stringify(r);
 })()`;

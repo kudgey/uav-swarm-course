@@ -11,6 +11,7 @@ const props = defineProps<{
   lines?: number | string
   sec?: number | string
   fragment?: boolean
+  check?: boolean
 }>()
 
 const open = ref(false)
@@ -19,15 +20,15 @@ const fmtSec = (s: number | string | undefined) =>
 </script>
 
 <template>
-  <div class="cf" :class="{ 'is-open': open, 'is-fragment': props.fragment }">
+  <div class="cf" :class="{ 'is-open': open, 'is-fragment': props.fragment, 'is-check': props.check }">
     <button class="cf__head" type="button" :aria-expanded="open" @click="open = !open">
       <span class="cf__chev" aria-hidden="true">▸</span>
-      <span class="cf__title">{{ props.title }}</span>
+      <span class="cf__title"><template v-if="props.check">Перевірка кодом: </template>{{ props.title }}</span>
       <span class="cf__meta">
-        <template v-if="props.fragment">фрагмент · </template>
+        <template v-if="props.fragment">фрагмент · </template><template v-if="props.check">код і вивід · </template>
         {{ props.lines }} рядків<template v-if="props.sec !== undefined && !props.fragment"> · {{ fmtSec(props.sec) }}</template>
       </span>
-      <span class="cf__btn">{{ open ? 'Сховати код' : 'Показати код' }}</span>
+      <span class="cf__btn">{{ open ? (props.check ? 'Сховати' : 'Сховати код') : (props.check ? 'Показати' : 'Показати код') }}</span>
     </button>
     <div v-show="open" class="cf__body">
       <slot />
@@ -97,4 +98,6 @@ const fmtSec = (s: number | string | undefined) =>
   .cf__meta { margin-left: 1.4rem; }
   .cf__btn { margin-left: auto; }
 }
+.is-check { border-radius: 10px; margin-bottom: 1.2rem; }
+.cf__body :deep(.cf__out) { margin: 0 0.9rem 0.6rem; }
 </style>
