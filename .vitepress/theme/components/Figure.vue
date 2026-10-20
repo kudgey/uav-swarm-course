@@ -2,7 +2,7 @@
 import { ref, computed, onUnmounted } from 'vue'
 import { withBase } from 'vitepress'
 
-const props = defineProps<{ src: string; alt?: string }>()
+const props = defineProps<{ src: string; msrc?: string; alt?: string }>()
 
 /**
  * Звичайні markdown-картинки VitePress префіксує base сам, а вміст
@@ -10,6 +10,8 @@ const props = defineProps<{ src: string; alt?: string }>()
  * у підкаталозі /<репозиторій>/, усі рисунки дають 404.
  */
 const url = computed(() => withBase(props.src))
+/** Вузька версія для екранів до 720 px — для рисунків, ширших за 2,2:1. */
+const murl = computed(() => (props.msrc ? withBase(props.msrc) : ''))
 
 const zoomed = ref<string | null>(null)
 
@@ -29,8 +31,11 @@ onUnmounted(() => document.removeEventListener('keydown', onKey))
 
 <template>
   <figure class="uk-figure">
-    <div class="uk-figure__frame" @click="open(url)" :title="'Збільшити: ' + (alt || '')">
-      <img :src="url" :alt="alt" loading="lazy" />
+    <div class="uk-figure__frame" :class="{ 'has-m': murl }" @click="open(url)" :title="'Збільшити: ' + (alt || '')">
+      <picture>
+        <source v-if="murl" media="(max-width: 720px)" :srcset="murl" />
+        <img :src="url" :alt="alt" loading="lazy" />
+      </picture>
     </div>
     <figcaption class="uk-figure__caption">
       <slot />

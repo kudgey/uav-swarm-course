@@ -52,7 +52,9 @@ WIDGETS: dict[tuple[str, str], str] = {
     ("04", "Q-learning у дії"): "GridWorldLab",
     ("04", "Модель відома: динамічне програмування"): "MarsSweepLab",
     ("13", "Частина 2 · Як чесно показати результат"): "SeedsLab",
-    ("06", "Результат коду: усі п'ять ігор одразу"): "MatrixGameLab",
+    ("06", "Імовірнісні рівноваги: умова байдужості"): "MatrixGameLab",
+    ("06", "Нестаціонарність у прогоні"): "IQLStepLab",
+    ("06", "Що вивчили CQL і IQL"): "CorridorLab",
     ("12", "Чого ця схема не гарантує"): "RobustnessLab",
     ("04", "ε-жадібний вибір на бандиті"): "EpsilonLab",
     ("05", "PPO на числах: де обрізання зупиняє крок"): "PPOClipLab",
@@ -340,7 +342,11 @@ def convert_card(card, alts, figs_present, missing, ctx):
                 alt = ua
             body = caption if caption else alt
             alt_esc = alt.replace('"', "&quot;")
-            out += ["", f'<Figure src="{src}" alt="{alt_esc}">', "", body, "", "</Figure>", ""]
+            # Вузька версія для телефона: name-m.png поруч, якщо рисунок ширший за 2,2:1.
+            mname = name.rsplit(".", 1)[0] + "-m.png"
+            m = f' msrc="/figs/{sub}/{mname}"' if os.path.exists(
+                os.path.join(SITE, "public", "figs", sub, mname)) else ""
+            out += ["", f'<Figure src="{src}"{m} alt="{alt_esc}">', "", body, "", "</Figure>", ""]
             i += 1
             continue
 

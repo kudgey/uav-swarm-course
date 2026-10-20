@@ -214,6 +214,10 @@ html {
   display: block;
   border-radius: 4px;
 }
+/* Вузька версія рисунка (name-m.png) висока — на телефоні не обмежуємо висоту, інакше текст дрібнішає. */
+@media (max-width: 720px) {
+  .uk-figure__frame.has-m img { max-height: none; }
+}
 
 .uk-figure__caption {
   margin-top: 0.7rem;
