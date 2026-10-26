@@ -68,7 +68,7 @@ def chains(blocks):
             if lang != FRAGMENT]
 
 
-def run_chain(pieces, python, long=False):
+def run_chain(pieces, python, long=False, in_viz=False):
     with tempfile.TemporaryDirectory() as tmp:
         runner, src, dst = (os.path.join(tmp, n) for n in ("runner.py", "in.json", "out.json"))
         open(runner, "w", encoding="utf-8").write(RUNNER)
@@ -78,7 +78,7 @@ def run_chain(pieces, python, long=False):
         try:
             p = subprocess.run([python, runner, src, dst], capture_output=True, text=True,
                                timeout=LONG_TIMEOUT if long else TIMEOUT,
-                               cwd=VIZ if long else tmp, env=env)
+                               cwd=VIZ if long or in_viz else tmp, env=env)
         except subprocess.TimeoutExpired:
             return None, f"таймаут {LONG_TIMEOUT if long else TIMEOUT} с", time.time() - t0
         dt = time.time() - t0
@@ -128,7 +128,8 @@ def run_module(num, fix, long_ok=False):
                     need = "--long і UAV_EXT_PYTHON" if tag == "long" else "UAV_EXT_PYTHON"
                     errors.append(f"{name}: {tag} без збереженого виводу — запустіть із {need}")
                 continue
-        out, err, dt = run_chain(chain, python, long=lang == "python long")
+        # плашки «Перевірка кодом» читають дані прогонів із gamma_course/viz
+        out, err, dt = run_chain(chain, python, long=lang == "python long", in_viz=lang == "python check")
         if err:
             errors.append(f"{name}: {err}")
             print(f"    {k:>2} [{h}] ✗ {dt:5.1f} с")

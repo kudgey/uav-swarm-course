@@ -16,7 +16,6 @@ import BoidsLab from './components/BoidsLab.vue'
 import ConsensusLab from './components/ConsensusLab.vue'
 import PotentialFieldLab from './components/PotentialFieldLab.vue'
 import ConnectivityLab from './components/ConnectivityLab.vue'
-import RewardLab from './components/RewardLab.vue'
 import ScalingLab from './components/ScalingLab.vue'
 import GridWorldLab from './components/GridWorldLab.vue'
 import SeedsLab from './components/SeedsLab.vue'
@@ -48,7 +47,6 @@ export default {
     app.component('ConsensusLab', ConsensusLab)
     app.component('PotentialFieldLab', PotentialFieldLab)
     app.component('ConnectivityLab', ConnectivityLab)
-    app.component('RewardLab', RewardLab)
     app.component('ScalingLab', ScalingLab)
     app.component('GridWorldLab', GridWorldLab)
     app.component('SeedsLab', SeedsLab)

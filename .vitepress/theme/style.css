@@ -766,3 +766,18 @@ html.uk-pres .uk-figure__frame img {
   .vp-doc :not(mjx-container) > svg,
   .vp-doc img { max-width: 100%; height: auto; }
 }
+
+/* Блоки «::: info Розрахунок» — покрокові обчислення: відкриті, з акцентною смугою */
+.vp-doc .custom-block.info {
+  border: 1px solid var(--uk-line);
+  border-left: 4px solid var(--uk-accent);
+  background: var(--uk-accent-soft);
+}
+.vp-doc .custom-block.info .custom-block-title { color: var(--uk-accent); }
+.vp-doc .custom-block.info table { margin: 0.6rem 0; }
+/* на телефоні маленька таблиця розрахунку вміщається цілком, без прокрутки вбік */
+@media (max-width: 720px) {
+  .vp-doc .custom-block.info table { font-size: 0.8rem; }
+  .vp-doc .custom-block.info th,
+  .vp-doc .custom-block.info td { min-width: 0; padding: 0.35rem 0.45rem; }
+}
