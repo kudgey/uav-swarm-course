@@ -352,7 +352,8 @@ def convert_card(card, alts, figs_present, missing, ctx):
             body = caption if caption else alt
             alt_esc = alt.replace('"', "&quot;")
             # Вузька версія для телефона: name-m.png поруч, якщо рисунок ширший за 2,2:1.
-            mname = name.rsplit(".", 1)[0] + "-m.png"
+            base, ext = name.rsplit(".", 1)
+            mname = f"{base}-m.{ext}"  # і для .gif: анімація має свою вузьку версію
             m = f' msrc="/figs/{sub}/{mname}"' if os.path.exists(
                 os.path.join(SITE, "public", "figs", sub, mname)) else ""
             out += ["", f'<Figure src="{src}"{m} alt="{alt_esc}">', "", body, "", "</Figure>", ""]
@@ -429,7 +430,7 @@ def main(argv):
         d = os.path.join(SITE, "public", "figs", sub)
         if os.path.isdir(d):
             figs_present |= {f.rsplit(".", 1)[0]
-                             for f in os.listdir(d) if f.endswith(".png")}
+                             for f in os.listdir(d) if f.endswith((".png", ".gif"))}
     nums = argv or [f"{i:02d}" for i in range(1, 14)]
     total_missing, total_cards, errors = [], 0, []
     for n in nums:
