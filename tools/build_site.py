@@ -63,6 +63,7 @@ WIDGETS: dict[tuple[str, str], str] = {
     ("05", "Алгоритм PPO по кроках"): 'PolicyStepLab algo="ppo"',
     ("05", "Ціль і втрата на числах"): "DQNLoopLab",
     ("05", "Політ крок за кроком"): "HoverFlightLab",
+    ("07", "3.7 Політ зсередини"): "PolicyFlightLab",
     ("03", "Щільніший граф гірше терпить затримки"): "DelayLab",
     ("11", "Зони відповідальності: розбиття Вороного"): "VoronoiLab",
 }
@@ -403,7 +404,10 @@ def build(num, alts, figs_present, errors):
         section, is_part = convert_card(card, alts, figs_present, missing, ctx)
         n_parts += is_part
         tag = WIDGETS.get((num, head))
-        if tag:
+        if tag and "<!-- widget -->" in section:  # виджет посеред картки — на місці мітки
+            section = section.replace("<!-- widget -->", f"<{tag} />", 1)
+            used_widgets.append(tag)
+        elif tag:
             section += f"\n\n<{tag} />"
             used_widgets.append(tag)
         parts.append(section)

@@ -128,8 +128,11 @@ def run_module(num, fix, long_ok=False):
                     need = "--long і UAV_EXT_PYTHON" if tag == "long" else "UAV_EXT_PYTHON"
                     errors.append(f"{name}: {tag} без збереженого виводу — запустіть із {need}")
                 continue
-        # плашки «Перевірка кодом» читають дані прогонів із gamma_course/viz
-        out, err, dt = run_chain(chain, python, long=lang == "python long", in_viz=lang == "python check")
+        # плашки «Перевірка кодом» і видимі блоки, що лише читають записані дані (np.load),
+        # виконуються в gamma_course/viz
+        reads = lang == "python" and "np.load(" in code
+        out, err, dt = run_chain(chain, python, long=lang == "python long",
+                                 in_viz=lang == "python check" or reads)
         if err:
             errors.append(f"{name}: {err}")
             print(f"    {k:>2} [{h}] ✗ {dt:5.1f} с")

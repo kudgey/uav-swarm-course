@@ -62,6 +62,7 @@ export default {
     // віджети з великими записаними даними вантажаться окремо, лише на своїй сторінці
     app.component('DQNLoopLab', defineAsyncComponent(() => import('./components/DQNLoopLab.vue')))
     app.component('HoverFlightLab', defineAsyncComponent(() => import('./components/HoverFlightLab.vue')))
+    app.component('PolicyFlightLab', defineAsyncComponent(() => import('./components/PolicyFlightLab.vue')))
     app.component('PolicyStepLab', defineAsyncComponent(() => import('./components/PolicyStepLab.vue')))
     app.component('PolicyOutputLab', defineAsyncComponent(() => import('./components/PolicyOutputLab.vue')))
     app.component('IQLStepLab', defineAsyncComponent(() => import('./components/IQLStepLab.vue')))
