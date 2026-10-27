@@ -49,7 +49,7 @@ def main():
                 j = i + 1
                 while j < len(lines) and not lines[j].strip():
                     j += 1
-                cap = lines[j] if j < len(lines) else ""
+                cap = re.sub(r"^Рис\. [\d.]+\.\s+", "", lines[j]) if j < len(lines) else ""  # номер рисунка
                 if not cap.startswith("Джерело"):
                     bad.append(f"{where} — запозичений рисунок без рядка «Джерело» під ним")
                 elif "](" not in cap:

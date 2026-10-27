@@ -7,7 +7,7 @@
 
 Що робить конвертер:
   · ділить джерело на картки по `---`, поважаючи огорожі ```;
-  · картка «Частина N · …» стає розділом `##`, звичайна картка — `###`;
+  · картка «Частина N · …» або «Крок N. …» стає розділом `##`, звичайна картка — `###`;
     так права колонка сторінки дає дворівневий зміст замість плаского;
   · `RAWBASE/xxx.png` → локальний `/figs/own/xxx.png` або `/figs/ext/xxx.png`
     (запозичені рисунки — в `ext`, власні — в `own`);
@@ -84,7 +84,7 @@ def split_cards(text):
 
 
 IMG = re.compile(r"^!\[([^\]]*)\]\(([^)]+)\)\s*$")
-SOURCE = re.compile(r"^(Джерело[^:]*:.*)$")
+SOURCE = re.compile(r"^((?:Рис\. [\d.]+\.\s+)?Джерело[^:]*:.*)$")
 SCHEMA = re.compile(r"^>\s*СХЕМА:\s*(.+)$")
 
 
@@ -363,7 +363,7 @@ def convert_card(card, alts, figs_present, missing, ctx):
         # заголовок картки стає заголовком секції
         if line.startswith("# "):
             head = line[2:].strip()
-            is_part = head.startswith("Частина")
+            is_part = head.startswith(("Частина", "Крок "))
             out.append(("## " if is_part else "### ") + head)
             i += 1
             continue

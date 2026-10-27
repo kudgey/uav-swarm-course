@@ -781,3 +781,12 @@ html.uk-pres .uk-figure__frame img {
   .vp-doc .custom-block.info th,
   .vp-doc .custom-block.info td { min-width: 0; padding: 0.35rem 0.45rem; }
 }
+
+/* Навігатор кроку «Крок N з 6 · ●●○○○○» на початку розділу-кроку (модуль 07) */
+.vp-doc .step-nav {
+  margin: -0.4rem 0 0.8rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  color: var(--uk-accent);
+  font-weight: 600;
+}
