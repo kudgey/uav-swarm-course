@@ -404,7 +404,7 @@ def build(num, alts, figs_present, errors):
         section, is_part = convert_card(card, alts, figs_present, missing, ctx)
         n_parts += is_part
         tag = WIDGETS.get((num, head))
-        if tag and "<!-- widget -->" in section:  # виджет посеред картки — на місці мітки
+        if tag and "<!-- widget -->" in section:  # віджет посеред картки — на місці мітки
             section = section.replace("<!-- widget -->", f"<{tag} />", 1)
             used_widgets.append(tag)
         elif tag:
