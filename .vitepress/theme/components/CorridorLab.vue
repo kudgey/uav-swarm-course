@@ -8,21 +8,32 @@
  * (навчені таблиці), звіряє їхній вивід і пускає жадібні польоти зі старту.
  * Віджет лише програє ці польоти й показує оцінки Q у кожному стані; режим
  * «зіткнення» — політ, де обидва завжди летять уперед (−2, потім −50).
+ *
+ * Модуль 08 (set="m08"): ті самі кадри, але польоти записав
+ * gamma_course/viz/mod08_record.py з блоків decks_new/mod08.md — IA2C, критики
+ * V(s), Q(s,a) і COMA на 10 зернах; у кожному стані — імовірності дій обох політик.
  */
 import { ref, computed, watch, onUnmounted } from 'vue'
-import data from '../data/corridor.json'
+import data06 from '../data/corridor.json'
+import data08 from '../data/corridor08.json'
+
+const props = withDefaults(defineProps<{ set?: 'm06' | 'm08' }>(), { set: 'm06' })
+const M08 = props.set === 'm08'
+const data: any = M08 ? data08 : data06
 
 type Frame = { s: number[]; obs: string[][] | null; vis: number[][]; a: number[] | null; r: number; show: any; crash?: boolean }
 type Run = { name: string; kind: string; ret: number; end: string; dived: string; frames: Frame[] }
 const RUNS = data.runs as Run[]
 const ACTS = data.acts as string[]
 const K = 5, HOME = 6
-const GROUPS = [
-  { key: 'opt', label: 'оптимум' }, { key: 'crash', label: 'зіткнення' }, { key: 'CQL', label: 'CQL' },
-  { key: 'IQL', label: 'IQL' }, { key: 'IQL, сенсор 1', label: 'IQL, сенсор 1' },
-]
-const sensor = computed(() => group.value === 'IQL, сенсор 1')
-const group = ref('opt')
+const GROUPS = M08
+  ? (data.groups as string[]).map((k) => ({ key: k, label: k }))
+  : [
+      { key: 'opt', label: 'оптимум' }, { key: 'crash', label: 'зіткнення' }, { key: 'CQL', label: 'CQL' },
+      { key: 'IQL', label: 'IQL' }, { key: 'IQL, сенсор 1', label: 'IQL, сенсор 1' },
+    ]
+const group = ref(GROUPS[0].key)
+const sensor = computed(() => (M08 ? data.sensor[group.value] === 1 : group.value === 'IQL, сенсор 1'))
 const inGroup = computed(() => RUNS.filter((r) => r.kind === group.value))
 const ri = ref(0)
 const run = computed(() => inGroup.value[Math.min(ri.value, inGroup.value.length - 1)])
@@ -63,7 +74,11 @@ const showObs = (o: string[]) => `(${o[0] === '5' ? 'K' : o[0] === '6' ? 'вил
     <div class="lab__head">
       <div>
         <div class="lab__title">Коридор: політ крок за кроком</div>
-        <div class="lab__sub">
+        <div v-if="M08" class="lab__sub">
+          Жадібні польоти політик, навчених у кроках 1–4 (3 000 епізодів, зерна 0–9). Поруч — імовірності дій
+          обох акторів у кожному стані. Синій летить праворуч, помаранчевий — ліворуч.
+        </div>
+        <div v-else class="lab__sub">
           Оптимум — з ітерації за цінністю; «зіткнення» — обидва завжди летять уперед; режими CQL та IQL —
           жадібні польоти політик, навчених у частині 4 (3 000 епізодів). Синій летить праворуч, помаранчевий — ліворуч.
         </div>
@@ -109,7 +124,7 @@ const showObs = (o: string[]) => `(${o[0] === '5' ? 'K' : o[0] === '6' ? 'вил
       <p>Крок {{ t }} з {{ last }}. Синій — {{ where(fr.s[0]) }}, помаранчевий — {{ where(fr.s[1]) }}.
         Віддача досі: <b>{{ f(ret, 0) }}</b>.</p>
       <template v-if="fr.a">
-        <p v-if="group === 'IQL, сенсор 1' && fr.obs">Спостереження (своє місце; місце іншого): синій {{ showObs(fr.obs[0]) }},
+        <p v-if="sensor && fr.obs">Спостереження (своє місце; місце іншого): синій {{ showObs(fr.obs[0]) }},
           помаранчевий {{ showObs(fr.obs[1]) }}.</p>
         <p>Спільна дія: синій — <b>{{ ACTS[fr.a[0]] }}</b>, помаранчевий — <b>{{ ACTS[fr.a[1]] }}</b>;
           винагорода кроку <b :class="{ 'cl__bad': fr.r <= -50 }">{{ f(fr.r, 0) }}</b><template v-if="fr.r <= -50">
@@ -122,6 +137,14 @@ const showObs = (o: string[]) => `(${o[0] === '5' ? 'K' : o[0] === '6' ? 'вил
               <th v-for="a in ACTS" :key="a">{{ a }}</th></tr></thead>
             <tbody><tr v-for="(rowq, i) in fr.show.q" :key="i"><th>{{ ACTS[i] }}</th>
               <td v-for="(v, j) in rowq" :key="j" :class="{ pick: fr.a[0] === i && fr.a[1] === j }">{{ f(v) }}</td></tr></tbody>
+          </table>
+        </div>
+        <div v-else-if="fr.show && fr.show.kind === 'pi'" class="cl__tab">
+          <table>
+            <caption>Імовірності дій кожного актора в цьому стані</caption>
+            <thead><tr><th></th><th v-for="a in ACTS" :key="a">{{ a }}</th></tr></thead>
+            <tbody><tr v-for="(vec, i) in fr.show.q" :key="i"><th>{{ i === 0 ? 'синій' : 'помаранчевий' }}</th>
+              <td v-for="(v, j) in vec" :key="j" :class="{ pick: fr.a[i] === j }">{{ f(v, 2) }}</td></tr></tbody>
           </table>
         </div>
         <div v-else-if="fr.show" class="cl__tab">
