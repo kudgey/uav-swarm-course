@@ -67,6 +67,7 @@ export default {
     app.component('PolicyOutputLab', defineAsyncComponent(() => import('./components/PolicyOutputLab.vue')))
     app.component('IQLStepLab', defineAsyncComponent(() => import('./components/IQLStepLab.vue')))
     app.component('CorridorLab', defineAsyncComponent(() => import('./components/CorridorLab.vue')))
+    app.component('CargoLab', defineAsyncComponent(() => import('./components/CargoLab.vue')))
     app.component('PresToggle', PresToggle)
   }
 } satisfies Theme
