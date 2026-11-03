@@ -130,7 +130,9 @@ const actName = (k: number, a: number) => (a === 2 && fr.value.s[k] !== 0 ? '—Å—
 .cg__panel p { margin: 0; font-size: 0.88rem; line-height: 1.5; }
 .cg__tab { overflow-x: auto; }
 .cg__tab caption { caption-side: top; text-align: left; font-size: 0.8rem; color: var(--vp-c-text-2); padding-bottom: 0.2rem; }
-.cg__tab td, .cg__tab th { font-size: 0.8rem; white-space: nowrap; }
-.cg__tab td { font-family: var(--vp-font-family-mono); text-align: right; }
+.cg__tab table { table-layout: fixed; width: 100%; border-collapse: collapse; }
+.cg__tab td, .cg__tab th { font-size: 0.8rem; white-space: nowrap; padding: 0 0.35rem; text-align: right; }
+.cg__tab th:first-child { width: 2rem; text-align: left; }
+.cg__tab td { font-family: var(--vp-font-family-mono); }
 .cg__tab td.pick { color: var(--uk-warm); font-weight: 700; }
 </style>
