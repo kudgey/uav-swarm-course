@@ -18,6 +18,7 @@ const RUNS = data.runs as Run[]
 const ACTS = data.acts as string[]
 const GROUPS = data.groups as string[]
 const NAMES = ['A', 'B', 'C']
+const SHORT = ['лів.', 'прав.', 'вант.']  // заголовки таблиці: на 375 px повні слова зливаються
 const COLORS = ['#2E6FB7', '#F0A202', '#9B59B6']
 
 const group = ref(GROUPS[0])
@@ -101,7 +102,7 @@ const actName = (k: number, a: number) => (a === 2 && fr.value.s[k] !== 0 ? 'с�
         <div v-if="fr.pi" class="cg__tab">
           <table>
             <caption>Імовірності дій кожного апарата в цьому стані</caption>
-            <thead><tr><th></th><th v-for="a in ACTS" :key="a">{{ a }}</th></tr></thead>
+            <thead><tr><th></th><th v-for="a in SHORT" :key="a">{{ a }}</th></tr></thead>
             <tbody><tr v-for="(vec, i) in fr.pi" :key="i"><th>{{ NAMES[i] }}</th>
               <td v-for="(v, j) in vec" :key="j" :class="{ pick: fr.a[i] === j }">{{ f(v) }}</td></tr></tbody>
           </table>
