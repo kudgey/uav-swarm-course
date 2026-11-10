@@ -68,6 +68,7 @@ export default {
     app.component('IQLStepLab', defineAsyncComponent(() => import('./components/IQLStepLab.vue')))
     app.component('CorridorLab', defineAsyncComponent(() => import('./components/CorridorLab.vue')))
     app.component('CargoLab', defineAsyncComponent(() => import('./components/CargoLab.vue')))
+    app.component('SwarmLab', defineAsyncComponent(() => import('./components/SwarmLab.vue')))
     app.component('PresToggle', PresToggle)
   }
 } satisfies Theme

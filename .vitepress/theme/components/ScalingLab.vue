@@ -1,114 +1,83 @@
 <script setup lang="ts">
 /**
- * Масштабування рою: що стається, коли політику, навчену на восьми апаратах,
- * запускають на більшому рої.
+ * Масштабування рою: політику, навчену на восьми квадрокоптерах, запускають на більшому рої.
  *
- * Числа з картки «Масштабування: навчили на восьми, полетіли сто двадцять вісім»
- * модуля 09 — з Batra та ін., CoRL 2021 (arXiv:2109.07735). Опорні точки:
- * 8 → 0,02 зіткнення на апарат за хвилину, 128 → 8,63 без донавчання
- * і 1,37 після донавчання на 2·10⁸ кроків.
+ * Модуль 09, картка «5.1 Те саме в рої квадрокоптерів». Числа — табл. 1 з Batra та ін.,
+ * CoRL 2021 (arXiv:2109.07735): зіткнень на апарат за хвилину і відстань до цілі
+ * для 8–128 апаратів, без донавчання і після донавчання на 2·10⁸ кроків.
+ * Віджет показує лише виміряні точки, без інтерполяції.
  */
 import { ref, computed } from 'vue'
 
-/** Виміряні опорні точки; проміжні — інтерполяція в логарифмі N. */
-const BASE: [number, number][] = [[8, 0.02], [16, 0.05], [32, 0.63], [64, 3.10], [128, 8.63]]
-const TUNED: [number, number][] = [[8, 0.02], [16, 0.03], [32, 0.14], [64, 0.55], [128, 1.37]]
+type Row = { n: number; col: number; dist: number; colFt: number; distFt: number }
+const ROWS: Row[] = [
+  { n: 8, col: 0.02, dist: 0.42, colFt: 0.0, distFt: 0.41 },
+  { n: 16, col: 0.09, dist: 0.57, colFt: 0.08, distFt: 0.63 },
+  { n: 32, col: 0.9, dist: 0.86, colFt: 0.16, distFt: 0.81 },
+  { n: 48, col: 2.43, dist: 1.11, colFt: 0.23, distFt: 0.92 },
+  { n: 64, col: 5.36, dist: 1.7, colFt: 0.29, distFt: 1.12 },
+  { n: 128, col: 8.63, dist: 4.32, colFt: 1.37, distFt: 3.05 },
+]
 
-const n = ref(8)
+const i = ref(0)
 const tuned = ref(false)
-
-function interp(pts: [number, number][], x: number) {
-  const lx = Math.log2(x)
-  for (let i = 0; i < pts.length - 1; i++) {
-    const [x0, y0] = pts[i], [x1, y1] = pts[i + 1]
-    const a = Math.log2(x0), b = Math.log2(x1)
-    if (lx >= a && lx <= b) return y0 + ((y1 - y0) * (lx - a)) / (b - a)
-  }
-  return lx < Math.log2(pts[0][0]) ? pts[0][1] : pts[pts.length - 1][1]
-}
-
-const collisions = computed(() => interp(tuned.value ? TUNED : BASE, n.value))
-/** Скільки разів гірше, ніж на восьми апаратах, на яких політику навчали. */
-const factor = computed(() => collisions.value / 0.02)
-/** Очікуване число дотиків за трихвилинну місію всім роєм. */
-const perMission = computed(() => collisions.value * n.value * 3)
+const row = computed(() => ROWS[i.value])
+const col = computed(() => (tuned.value ? row.value.colFt : row.value.col))
+const dist = computed(() => (tuned.value ? row.value.distFt : row.value.dist))
 
 const W = 460, H = 170
-const XS = [8, 16, 32, 64, 128]
 const yMax = 9
-const px = (v: number) => 34 + ((Math.log2(v) - 3) / 4) * (W - 50)
-const py = (v: number) => H - 22 - (Math.min(v, yMax) / yMax) * (H - 40)
-
-function path(pts: [number, number][]) {
-  const s: string[] = []
-  for (let v = 8; v <= 128; v *= 1.06) s.push(`${s.length ? 'L' : 'M'}${px(v).toFixed(1)},${py(interp(pts, v)).toFixed(1)}`)
-  s.push(`L${px(128).toFixed(1)},${py(interp(pts, 128)).toFixed(1)}`)
-  return s.join(' ')
-}
-const pathBase = path(BASE)
-const pathTuned = path(TUNED)
+const px = (k: number) => 40 + (k / (ROWS.length - 1)) * (W - 70)
+const py = (v: number) => H - 24 - (v / yMax) * (H - 44)
+const pts = (key: 'col' | 'colFt') => ROWS.map((r, k) => `${px(k).toFixed(1)},${py(r[key]).toFixed(1)}`).join(' ')
+const f = (v: number) => v.toFixed(2).replace('.', ',')
 </script>
 
 <template>
   <div class="lab">
     <div class="lab__head">
       <div>
-        <div class="lab__title">Перенесення політики на більший рій</div>
+        <div class="lab__title">Перенос політики на більший рій квадрокоптерів</div>
         <div class="lab__sub">
-          Політику навчали на восьми апаратах. Ведіть повзунок праворуч і дивіться,
-          де безкоштовний перенос закінчується.
+          Batra та ін., 2021: політику навчали на 8 апаратах, потім запускали на більшому рої
+          без донавчання і після донавчання. Лише виміряні точки.
         </div>
       </div>
-      <button class="lab__btn" @click="tuned = !tuned">
+      <button class="lab__btn" type="button" @click="tuned = !tuned">
         {{ tuned ? 'Без донавчання' : 'З донавчанням' }}
       </button>
     </div>
 
-    <div class="lab__controls">
-      <label class="lab__ctl">
-        <span>Апаратів у рої <b>{{ n }}</b></span>
-        <input v-model.number="n" type="range" min="8" max="128" step="1" />
-      </label>
+    <div class="lab__pills">
+      <button v-for="(r, k) in ROWS" :key="r.n" type="button" class="lab__pill" :class="{ 'is-on': i === k }"
+              @click="i = k">{{ r.n }}</button>
     </div>
 
-    <svg class="sc__plot" :viewBox="`0 0 ${W} ${H}`" aria-label="Зіткнення залежно від розміру рою">
-      <line v-for="x in XS" :key="'g' + x" :x1="px(x)" y1="14" :x2="px(x)" :y2="H - 22" class="sc__grid" />
-      <text v-for="x in XS" :key="'t' + x" :x="px(x)" :y="H - 7" class="sc__tick">{{ x }}</text>
-
-      <path :d="pathBase" class="sc__line" :class="{ 'is-dim': tuned }" />
-      <path :d="pathTuned" class="sc__line is-tuned" :class="{ 'is-dim': !tuned }" />
-
-      <line :x1="px(n)" y1="14" :x2="px(n)" :y2="H - 22" class="sc__cursor" />
-      <circle :cx="px(n)" :cy="py(collisions)" r="4.5" class="sc__dot" />
-      <text x="34" y="12" class="sc__axis">зіткнень на апарат за хвилину</text>
+    <svg class="sc__plot" :viewBox="`0 0 ${W} ${H}`" role="img" aria-label="Зіткнення на апарат за хвилину залежно від розміру рою">
+      <line v-for="(r, k) in ROWS" :key="'g' + r.n" :x1="px(k)" y1="14" :x2="px(k)" :y2="H - 24" class="sc__grid" />
+      <text v-for="(r, k) in ROWS" :key="'t' + r.n" :x="px(k)" :y="H - 8" class="sc__tick">{{ r.n }}</text>
+      <polyline :points="pts('col')" class="sc__line" :class="{ 'is-dim': tuned }" />
+      <polyline :points="pts('colFt')" class="sc__line is-tuned" :class="{ 'is-dim': !tuned }" />
+      <circle v-for="(r, k) in ROWS" :key="'b' + r.n" :cx="px(k)" :cy="py(r.col)" r="3" class="sc__pt" :class="{ 'is-dim': tuned }" />
+      <circle v-for="(r, k) in ROWS" :key="'f' + r.n" :cx="px(k)" :cy="py(r.colFt)" r="3" class="sc__pt is-tuned" :class="{ 'is-dim': !tuned }" />
+      <circle :cx="px(i)" :cy="py(col)" r="6" class="sc__dot" />
+      <text x="40" y="11" class="sc__axis">зіткнень на апарат за хвилину</text>
     </svg>
 
     <div class="lab__stats">
-      <div class="lab__stat" :class="collisions > 0.05 ? 'is-warm' : 'is-green'">
-        <b>{{ collisions.toFixed(2) }}</b>
+      <div class="lab__stat" :class="col > 0.1 ? 'is-warm' : 'is-green'">
+        <b>{{ f(col) }}</b>
         <span>зіткнень на апарат за хвилину</span>
       </div>
       <div class="lab__stat">
-        <b>×{{ factor.toFixed(0) }}</b>
-        <span>гірше, ніж на восьми</span>
+        <b>{{ f(dist) }} м</b>
+        <span>відстань до цілі</span>
       </div>
       <div class="lab__stat">
-        <b>{{ perMission.toFixed(1) }}</b>
-        <span>дотиків за місію 3 хв усім роєм</span>
-      </div>
-      <div class="lab__stat" :class="n <= 16 ? 'is-green' : 'is-warm'">
-        <b>{{ n <= 16 ? 'так' : 'ні' }}</b>
-        <span>перенос без втрат</span>
+        <b>{{ row.n / 8 }}×</b>
+        <span>більше апаратів, ніж у навчанні</span>
       </div>
     </div>
-
-    <p class="lab__note">
-      До шістнадцяти апаратів політика переноситься майже без втрат — це приблизно
-      двократна зміна N. Далі деградація нелінійна: на 128 апаратах зіткнень
-      у чотириста разів більше, ніж на навчальному розмірі. Донавчання на
-      2·10⁸ кроків знижує їх приблизно вшестеро, але до рівня восьми не повертає.
-      Практичне правило: безкоштовний перенос живе в межах подвоєння рою.
-    </p>
   </div>
 </template>
 
@@ -117,14 +86,15 @@ const pathTuned = path(TUNED)
 .sc__grid { stroke: var(--vp-c-divider); stroke-width: 0.7; }
 .sc__tick, .sc__axis {
   fill: var(--vp-c-text-3);
-  font-size: 9px;
+  font-size: 11px;
   text-anchor: middle;
   font-family: var(--vp-font-family-mono);
 }
 .sc__axis { text-anchor: start; }
 .sc__line { fill: none; stroke: var(--uk-warm); stroke-width: 2.2; transition: opacity 0.2s ease; }
 .sc__line.is-tuned { stroke: var(--uk-green); }
-.sc__line.is-dim { opacity: 0.22; }
-.sc__cursor { stroke: var(--uk-accent); stroke-width: 1; stroke-dasharray: 3 3; }
-.sc__dot { fill: var(--uk-accent); }
+.sc__pt { fill: var(--uk-warm); transition: opacity 0.2s ease; }
+.sc__pt.is-tuned { fill: var(--uk-green); }
+.is-dim { opacity: 0.22; }
+.sc__dot { fill: none; stroke: var(--uk-accent); stroke-width: 2; }
 </style>
