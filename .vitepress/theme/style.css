@@ -782,6 +782,30 @@ html.uk-pres .uk-figure__frame img {
   .vp-doc .custom-block.info td { min-width: 0; padding: 0.35rem 0.45rem; }
 }
 
+/* Блоки «::: danger Проблема» і «::: warning Ідея» — ланцюжок кроку: що не так → як розв'язуємо */
+.vp-doc .custom-block.danger {
+  border: 1px solid var(--uk-line);
+  border-left: 4px solid #c0392b;
+  background: rgba(192, 57, 43, 0.06);
+}
+.vp-doc .custom-block.danger .custom-block-title { color: #c0392b; }
+.vp-doc .custom-block.warning {
+  border: 1px solid var(--uk-line);
+  border-left: 4px solid #c88a04;
+  background: rgba(240, 162, 2, 0.08);
+}
+.vp-doc .custom-block.warning .custom-block-title { color: #a86f00; }
+.vp-doc .custom-block.danger p, .vp-doc .custom-block.danger li,
+.vp-doc .custom-block.warning p, .vp-doc .custom-block.warning li { color: var(--vp-c-text-1); }
+.vp-doc .custom-block.danger table { margin: 0.6rem 0; }
+.dark .vp-doc .custom-block.danger .custom-block-title { color: #ef7d6e; }
+.dark .vp-doc .custom-block.warning .custom-block-title { color: #f0b847; }
+@media (max-width: 720px) {
+  .vp-doc .custom-block.danger table { font-size: 0.8rem; }
+  .vp-doc .custom-block.danger th,
+  .vp-doc .custom-block.danger td { min-width: 0; padding: 0.35rem 0.45rem; }
+}
+
 /* Навігатор кроку «Крок N з 6 · ●●○○○○» на початку розділу-кроку (модуль 07) */
 .vp-doc .step-nav {
   margin: -0.4rem 0 0.8rem;
