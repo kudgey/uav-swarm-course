@@ -17,7 +17,6 @@ import ConsensusLab from './components/ConsensusLab.vue'
 import PotentialFieldLab from './components/PotentialFieldLab.vue'
 import ConnectivityLab from './components/ConnectivityLab.vue'
 import GridWorldLab from './components/GridWorldLab.vue'
-import SeedsLab from './components/SeedsLab.vue'
 import MatrixGameLab from './components/MatrixGameLab.vue'
 import RobustnessLab from './components/RobustnessLab.vue'
 import EpsilonLab from './components/EpsilonLab.vue'
@@ -47,7 +46,6 @@ export default {
     app.component('PotentialFieldLab', PotentialFieldLab)
     app.component('ConnectivityLab', ConnectivityLab)
     app.component('GridWorldLab', GridWorldLab)
-    app.component('SeedsLab', SeedsLab)
     app.component('MatrixGameLab', MatrixGameLab)
     app.component('RobustnessLab', RobustnessLab)
     app.component('EpsilonLab', EpsilonLab)
